@@ -21,7 +21,9 @@ fun AppNavGraph(
         modifier = modifier
         ){
             composable(route = HomeDestination.route){
-                HomeScreen()
+                HomeScreen(
+                    navigateToMap = {}
+                )
             }
     }
 }
