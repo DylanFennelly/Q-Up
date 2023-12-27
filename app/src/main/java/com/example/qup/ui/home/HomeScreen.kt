@@ -1,4 +1,4 @@
-package com.example.qup.ui
+package com.example.qup.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -9,13 +9,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 import com.example.qup.QueueTopAppBar
-import com.example.qup.ui.theme.QUpTheme
+import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.theme.QueueTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(){
+fun HomeScreen(
+    homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+){
     Scaffold(
         topBar = { QueueTopAppBar(title = "Home") }
     ) { innerPadding ->         //https://stackoverflow.com/questions/66573601/bottom-nav-bar-overlaps-screen-content-in-jetpack-compose
@@ -37,7 +42,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    QUpTheme {
+    QueueTheme {
         Greeting("Android")
     }
 }
