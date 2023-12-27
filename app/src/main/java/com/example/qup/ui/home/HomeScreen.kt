@@ -12,8 +12,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.qup.QueueTopAppBar
+import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
+
+object HomeDestination: NavigationDestination{
+    override val route = "home"
+    override val titleRes = R.string.home_title
+
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
