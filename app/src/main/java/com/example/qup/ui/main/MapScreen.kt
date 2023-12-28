@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,9 +9,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.home.HomeViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -31,7 +36,11 @@ object MapDestination: NavigationDestination {
 fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
+    modifier: Modifier = Modifier,
+    mapViewModel: MapViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
+    val context = LocalContext.current
+
     Scaffold(
         topBar = { QueueTopAppBar(
             title = stringResource(R.string.map_title),
