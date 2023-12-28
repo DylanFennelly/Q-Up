@@ -41,11 +41,13 @@ fun AppNavGraph(
             //hardcoded; for some reason, it just will not read in the data directly from the data object.
             val mapLocation = when(facilityName){
                 "SETU" -> LatLng(52.245866910002846, -7.138898812594175)
+                "Emerald Park" -> LatLng(53.54509576070679, -6.4615623530363235)
                 else -> LatLng(0.0,0.0)
             }
 
             val mapZoom = when(facilityName){
                 "SETU" -> 16f
+                "Emerald Park" -> 16f
                 else -> 0f
             }
 
