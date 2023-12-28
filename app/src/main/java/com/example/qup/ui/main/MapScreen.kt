@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -16,11 +17,19 @@ object MapDestination: NavigationDestination {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MapScreen(){
+fun MapScreen(
+    canNavigateBack: Boolean = true,
+    onNavigateUp: () -> Unit,
+){
     Scaffold(
-        topBar = { QueueTopAppBar(title = stringResource(R.string.map_title))}
+        topBar = { QueueTopAppBar(
+            title = stringResource(R.string.map_title),
+            canNavigateBack = canNavigateBack,
+            navigateUp = onNavigateUp
+        )}
     ) {
 
     }

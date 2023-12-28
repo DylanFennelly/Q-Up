@@ -35,7 +35,9 @@ fun AppNavGraph(
                 type = NavType.StringType
             })
         ){
-            MapScreen()
+            MapScreen(
+                onNavigateUp = { navController.navigateUp() }
+            )
         }
     }
 }
