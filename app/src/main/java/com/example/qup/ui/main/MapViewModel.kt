@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 class MapViewModel(
@@ -13,7 +14,7 @@ class MapViewModel(
     private val facilityRepository: FacilityRepository
 ): ViewModel() {
     //state of facility obtained from request
-    val facility = mutableStateOf<Facility>(Facility("", emptyList()))
+    val facility = mutableStateOf<Facility>(Facility("", LatLng(0.0,0.0), 0f, emptyList()))
     //private val facilityName: String = checkNotNull(savedStateHandle[MapDestination.facility])
 
     fun retrieveFacility(facilityName: String){

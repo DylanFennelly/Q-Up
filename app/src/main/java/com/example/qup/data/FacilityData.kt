@@ -14,7 +14,7 @@ class FacilityData {
     )
 
     private val facilitiesList = listOf(
-        Facility("SETU", setuAttractionList)
+        Facility("SETU", LatLng(52.245866910002846, -7.138898812594175), 11f, setuAttractionList)
     )
 
     fun getFacilities(): List<Facility> = facilitiesList.toMutableList()
