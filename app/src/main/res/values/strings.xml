@@ -3,4 +3,8 @@
     <string name="home_title">Home</string>
     <string name="app_welcome">Welcome to Q-Up</string>
     <string name="setu_button">Enter SETU</string>
+    <string name="map_title">Attraction Map</string>
+    <string name="back_button">Back</string>
+    <string name="join_queue_button">Join Queue</string>
+    <string name="emerald_park_button">Enter Emerald Park</string>
 </resources>

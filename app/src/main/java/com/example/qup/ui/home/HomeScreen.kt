@@ -40,24 +40,25 @@ object HomeDestination: NavigationDestination{
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    navigateToMap: () -> Unit,
+    navigateToMap: (String) -> Unit,
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
-    QueueTheme {
-        Scaffold(
-            //topBar = { QueueTopAppBar(title = "Home") }
-        ) { innerPadding ->         //https://stackoverflow.com/questions/66573601/bottom-nav-bar-overlaps-screen-content-in-jetpack-compose
-            Box(modifier = Modifier.padding(innerPadding)) {
-                HomeBody()
-            }
+    Scaffold(
+        //topBar = { QueueTopAppBar(title = "Home") }
+    ) { innerPadding ->         //https://stackoverflow.com/questions/66573601/bottom-nav-bar-overlaps-screen-content-in-jetpack-compose
+        Box(modifier = Modifier.padding(innerPadding)) {
+            HomeBody(
+                navigateToMap
+            )
         }
     }
-
 }
 
 @Composable
-fun HomeBody(){
+fun HomeBody(
+    onButtonClick: (String) -> Unit
+){
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -74,28 +75,26 @@ fun HomeBody(){
             modifier = Modifier.padding(bottom = 64.dp)
         )
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { onButtonClick("SETU") },        //TODO: Change to use actual data, not raw string
             colors = ButtonDefaults.buttonColors(colorResource(R.color.setu_grey))
         ) {
             Text(text = stringResource(R.string.setu_button))
+        }
+        Button(
+            onClick = { onButtonClick("Emerald Park") },
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.emerald_green))
+        ) {
+            Text(text = stringResource(R.string.emerald_park_button))
         }
 
     }
 
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     QueueTheme {
-        HomeBody()
+        HomeBody({})
     }
 }

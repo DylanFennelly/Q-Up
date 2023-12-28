@@ -1,18 +1,25 @@
 package com.example.qup.ui
 
-import android.text.Spannable.Factory
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.ui.home.HomeViewModel
+import com.example.qup.ui.main.MapViewModel
 
 //Provides factory to instantiate ViewModels
 object AppViewModelProvider{
     val Factory = viewModelFactory {
         initializer {
             HomeViewModel()
+        }
+        initializer {
+            MapViewModel(
+                this.createSavedStateHandle(),
+                queueApplicationContainer().container.facilityRepository
+            )
         }
     }
 }

@@ -1,16 +1,16 @@
 package com.example.qup.app
 
-import com.example.qup.data.AttractionData
-import com.example.qup.data.AttractionRepository
-import com.example.qup.data.SetuAttractionRepository
+import com.example.qup.data.FacilityData
+import com.example.qup.data.FacilityRepository
+import com.example.qup.data.AppFacilityRepository
 
 //Container to instantiate data repositories
 interface AppContainer {
-    val attractionRepository: AttractionRepository
+    val facilityRepository: FacilityRepository
 }
 
 class AppDataContainer: AppContainer{
-    override val attractionRepository: AttractionRepository by lazy {
-        SetuAttractionRepository(AttractionData())
+    override val facilityRepository: FacilityRepository by lazy {
+        AppFacilityRepository(FacilityData())
     }
 }
