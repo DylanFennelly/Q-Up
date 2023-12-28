@@ -1,6 +1,5 @@
 package com.example.qup.ui
 
-import android.text.Spannable.Factory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
@@ -19,7 +18,7 @@ object AppViewModelProvider{
         initializer {
             MapViewModel(
                 this.createSavedStateHandle(),
-                queueApplicationContainer().container.attractionRepository
+                queueApplicationContainer().container.facilityRepository
             )
         }
     }
