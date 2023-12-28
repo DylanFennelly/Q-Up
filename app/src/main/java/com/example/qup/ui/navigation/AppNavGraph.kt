@@ -34,10 +34,14 @@ fun AppNavGraph(
             arguments = listOf(navArgument(MapDestination.facility){
                 type = NavType.StringType
             })
-        ){
-            MapScreen(
-                onNavigateUp = { navController.navigateUp() }
-            )
+        ){ backStackEntry ->            //Generative AI Usage 1.
+            val facilityName = backStackEntry.arguments?.getString(MapDestination.facility)
+            if (facilityName != null) {
+                MapScreen(
+                    onNavigateUp = { navController.navigateUp() },
+                    facilityName = facilityName
+                )
+            }
         }
     }
 }

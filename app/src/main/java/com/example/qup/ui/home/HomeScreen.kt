@@ -75,7 +75,7 @@ fun HomeBody(
             modifier = Modifier.padding(bottom = 64.dp)
         )
         Button(
-            onClick = { onButtonClick("setu") },        //TODO: Change to use actual data, not raw string
+            onClick = { onButtonClick("SETU") },        //TODO: Change to use actual data, not raw string
             colors = ButtonDefaults.buttonColors(colorResource(R.color.setu_grey))
         ) {
             Text(text = stringResource(R.string.setu_button))
@@ -83,14 +83,6 @@ fun HomeBody(
 
     }
 
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }
 
 @Preview(showBackground = true)

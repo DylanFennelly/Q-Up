@@ -14,14 +14,16 @@ class MapViewModel(
 ): ViewModel() {
     //state of facility obtained from request
     val facility = mutableStateOf<Facility>(Facility("", emptyList()))
-    private val facilityName: String = checkNotNull(savedStateHandle[MapDestination.facility])
+    //private val facilityName: String = checkNotNull(savedStateHandle[MapDestination.facility])
 
-    fun retrieveFacility(){
+    fun retrieveFacility(facilityName: String){
         viewModelScope.launch {
-            val retrievedFacility = facilityRepository.getFacilities()
+            val retrievedFacilities = facilityRepository.getFacilities()
 
-            when(facilityName){         //Hard coded values for purpose of demonstration; real app will handle data from API request
-                "SETU" -> facility.value = retrievedFacility[0]
+            val selectedFacility = retrievedFacilities.find { it.name == facilityName }     //find facility with same name (assumes all facility names are unique)
+
+            selectedFacility?.let {             //if selected facility is not null (finds a match), set facility.value to it
+                facility.value = it
             }
         }
     }

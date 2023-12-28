@@ -5,13 +5,18 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
@@ -37,16 +42,24 @@ fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    mapViewModel: MapViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navController: NavController = rememberNavController(),
+    facilityName: String
 ){
-    val context = LocalContext.current
+    //https://medium.com/@sujathamudadla1213/what-is-launchedeffect-coroutine-api-android-jetpack-compose-76d568b79e63
+    LaunchedEffect(facilityName) {
+        mapViewModel.retrieveFacility(facilityName)
+    }
+
 
     Scaffold(
         topBar = { QueueTopAppBar(
             title = stringResource(R.string.map_title),
             canNavigateBack = canNavigateBack,
             navigateUp = onNavigateUp
-        )}
+        )
+            Text(mapViewModel.facility.value.name)
+        }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             MapBody()
