@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Facility
@@ -71,7 +72,8 @@ fun MapScreen(
                 canNavigateBack = canNavigateBack,
                 navigateUp = onNavigateUp
             )
-        }
+        },
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true)}
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             MapBody(

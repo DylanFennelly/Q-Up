@@ -7,4 +7,6 @@
     <string name="back_button">Back</string>
     <string name="join_queue_button">Join Queue</string>
     <string name="emerald_park_button">Enter Emerald Park</string>
+    <string name="attraction_list_button">Attraction List</string>
+    <string name="map_button">Attraction List</string>
 </resources>
