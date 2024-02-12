@@ -7,7 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.ui.home.HomeViewModel
-import com.example.qup.ui.main.MapViewModel
+import com.example.qup.ui.main.MainViewModel
 
 //Provides factory to instantiate ViewModels
 object AppViewModelProvider{
@@ -16,7 +16,7 @@ object AppViewModelProvider{
             HomeViewModel()
         }
         initializer {
-            MapViewModel(
+            MainViewModel(
                 this.createSavedStateHandle(),
                 queueApplicationContainer().container.facilityRepository
             )

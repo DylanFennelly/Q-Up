@@ -50,8 +50,10 @@ object MapDestination: NavigationDestination {
 fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
+    //navigateToMap: (String) -> Unit,
+    navigateToList: (String) -> Unit,
     modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navController: NavController = rememberNavController(),
     facilityName: String,
     mapLatLng: LatLng,
@@ -61,7 +63,7 @@ fun MapScreen(
 
     //https://medium.com/@sujathamudadla1213/what-is-launchedeffect-coroutine-api-android-jetpack-compose-76d568b79e63
     LaunchedEffect(facilityName) {
-        mapViewModel.retrieveFacility(facilityName)
+        mainViewModel.retrieveFacility(facilityName)
 
     }
 
@@ -73,11 +75,11 @@ fun MapScreen(
                 navigateUp = onNavigateUp
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true)}
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.facility.value.name)})}
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             MapBody(
-                facility = mapViewModel.facility.value,
+                facility = mainViewModel.facility.value,
                 latLng =  mapLatLng,
                 zoom = mapZoom
             )

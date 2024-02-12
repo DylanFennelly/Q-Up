@@ -73,7 +73,9 @@ fun QueueTopAppBar(
 @Composable
 fun QueueBottomAppBar(
     listSelected: Boolean,
-    mapSelected: Boolean
+    mapSelected: Boolean,
+    navigateToList: () -> Unit = {},
+    navigateToMap: () -> Unit = {}
 ){
     val listBG: Color =  if (listSelected) colorResource(id = R.color.dark_baby_blue) else colorResource(R.color.baby_blue)
     val mapBG: Color = if (mapSelected) colorResource(id = R.color.dark_baby_blue) else colorResource(R.color.baby_blue)
@@ -81,7 +83,7 @@ fun QueueBottomAppBar(
     BottomAppBar(
         containerColor = colorResource(R.color.baby_blue),
         contentColor = Color.White,
-        //modifier = Modifier.height(64.dp)
+        modifier = Modifier.height(64.dp)
     ){
         Row(
             Modifier
@@ -94,7 +96,7 @@ fun QueueBottomAppBar(
                     .weight(1F)
                     .background(listBG)
                     .fillMaxHeight(),
-                onClick = { /*TODO*/ },
+                onClick = navigateToList,
                 enabled = !listSelected
             ) {
                 Icon(
@@ -107,7 +109,7 @@ fun QueueBottomAppBar(
                 .weight(1F)
                 .background(mapBG)
                 .fillMaxHeight(),
-                onClick = { /*TODO*/ },
+                onClick = navigateToMap,
                 enabled = !mapSelected
             ) {
                 Icon(

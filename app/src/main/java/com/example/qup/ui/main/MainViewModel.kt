@@ -9,7 +9,7 @@ import com.example.qup.data.FacilityRepository
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
-class MapViewModel(
+class MainViewModel(
     savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository
 ): ViewModel() {
