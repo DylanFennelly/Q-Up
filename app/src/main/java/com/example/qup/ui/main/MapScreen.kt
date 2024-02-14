@@ -79,7 +79,7 @@ fun MapScreen(
                 navigateUp = onNavigateUp
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.facility.value.name)})}
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.facility.value.name)})} //TODO
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             MapBody(

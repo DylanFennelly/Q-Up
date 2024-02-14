@@ -26,7 +26,7 @@ object ListDestination: NavigationDestination {
 @Composable
 fun ListScreen(
     canNavigateBack: Boolean = true,
-    onNavigateUp: () -> Unit,
+    onNavigateUp: (String) -> Unit,
     navigateToMap: (String) -> Unit,
     mainViewModel: MainViewModel,
     facilityName: String
@@ -43,7 +43,7 @@ fun ListScreen(
             QueueTopAppBar(
                 title = stringResource(R.string.attraction_list_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
+                navigateUp = {onNavigateUp(mainViewModel.facility.value.name)}
             )
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.facility.value.name) }) }

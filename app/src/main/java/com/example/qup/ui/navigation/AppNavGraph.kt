@@ -61,7 +61,7 @@ fun AppNavGraph(
 
                 if (facilityName != null) {
                     MapScreen(
-                        onNavigateUp = { navController.navigateUp() },
+                        onNavigateUp = { navController.navigate(HomeDestination.route) },
                         facilityName = facilityName,
                         mapLatLng = mapLocation,
                         mapZoom = mapZoom,
@@ -81,7 +81,7 @@ fun AppNavGraph(
 
             if (facilityName != null) {
                 ListScreen(
-                    onNavigateUp = { navController.navigateUp() },
+                    onNavigateUp = { navController.navigate("${MapDestination.route}/${it}") },
                     facilityName = facilityName,
                     navigateToMap = { navController.navigate("${MapDestination.route}/${it}") },
                     mainViewModel = mainViewModel
