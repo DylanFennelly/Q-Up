@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -53,7 +54,7 @@ fun MapScreen(
     //navigateToMap: (String) -> Unit,
     navigateToList: (String) -> Unit,
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    mainViewModel: MainViewModel,
     navController: NavController = rememberNavController(),
     facilityName: String,
     mapLatLng: LatLng,
@@ -63,8 +64,11 @@ fun MapScreen(
 
     //https://medium.com/@sujathamudadla1213/what-is-launchedeffect-coroutine-api-android-jetpack-compose-76d568b79e63
     LaunchedEffect(facilityName) {
-        mainViewModel.retrieveFacility(facilityName)
-
+        //only get facility if store facility name doesnt match route name
+        if (mainViewModel.facility.value.name != facilityName) {
+            Log.i("GET", "Facility Name does not match route, getting facility")
+            mainViewModel.retrieveFacility(facilityName)
+        }
     }
 
     Scaffold(

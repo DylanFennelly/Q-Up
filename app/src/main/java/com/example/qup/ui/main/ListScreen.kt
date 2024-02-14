@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -27,13 +28,16 @@ fun ListScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     navigateToMap: (String) -> Unit,
-    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    mainViewModel: MainViewModel,
     facilityName: String
 ){
     LaunchedEffect(facilityName) {
-        mainViewModel.retrieveFacility(facilityName)
+        //only get facility if store facility name doesnt match route name
+        if (mainViewModel.facility.value.name != facilityName) {
+            Log.i("GET", "Facility Name does not match route, getting facility")
+            mainViewModel.retrieveFacility(facilityName)
+        }
     }
-
     Scaffold(
         topBar = {
             QueueTopAppBar(

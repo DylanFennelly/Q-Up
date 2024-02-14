@@ -2,15 +2,18 @@ package com.example.qup.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.home.HomeDestination
 import com.example.qup.ui.home.HomeScreen
 import com.example.qup.ui.main.ListDestination
 import com.example.qup.ui.main.ListScreen
+import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.MapDestination
 import com.example.qup.ui.main.MapScreen
 import com.google.android.gms.maps.model.LatLng
@@ -20,7 +23,9 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    //same view model for multiple screens -> initialise once, pass into screens
+    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)        //TODO: possibly move? idk how many standards im violating by initialising here
 ){
     NavHost(
         navController = navController,
@@ -61,6 +66,7 @@ fun AppNavGraph(
                         mapLatLng = mapLocation,
                         mapZoom = mapZoom,
                         navigateToList = {navController.navigate("${ListDestination.route}/${it}")},
+                        mainViewModel = mainViewModel
                     )
                 }
             }
@@ -77,7 +83,8 @@ fun AppNavGraph(
                 ListScreen(
                     onNavigateUp = { navController.navigateUp() },
                     facilityName = facilityName,
-                    navigateToMap = { navController.navigate("${MapDestination.route}/${it}") }
+                    navigateToMap = { navController.navigate("${MapDestination.route}/${it}") },
+                    mainViewModel = mainViewModel
                 )
             }
         }
