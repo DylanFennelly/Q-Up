@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
+import com.example.qup.network.FacilityApi
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,12 @@ class MainViewModel(
             selectedFacility?.let {             //if selected facility is not null (finds a match), set facility.value to it
                 facility.value = it
             }
+        }
+    }
+
+    private fun getFacilityAttractions(){
+        viewModelScope.launch {
+            val listResult = FacilityApi.retrofitService.getAttractions()
         }
     }
 

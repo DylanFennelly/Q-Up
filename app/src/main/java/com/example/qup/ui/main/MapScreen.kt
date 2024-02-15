@@ -58,7 +58,8 @@ fun MapScreen(
     navController: NavController = rememberNavController(),
     facilityName: String,
     mapLatLng: LatLng,
-    mapZoom: Float
+    mapZoom: Float,
+
 ){
     var mapLocation: LatLng = LatLng(0.0,0.0)
 
@@ -69,6 +70,7 @@ fun MapScreen(
             Log.i("GET", "Facility Name does not match route, getting facility")
             mainViewModel.retrieveFacility(facilityName)
         }
+
     }
 
     Scaffold(
