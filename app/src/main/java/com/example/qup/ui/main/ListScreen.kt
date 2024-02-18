@@ -29,7 +29,8 @@ fun ListScreen(
     onNavigateUp: (String) -> Unit,
     navigateToMap: (String) -> Unit,
     mainViewModel: MainViewModel,
-    facilityName: String
+    facilityName: String,
+    listUiState: String
 ){
     LaunchedEffect(facilityName) {
         //only get facility if store facility name doesnt match route name

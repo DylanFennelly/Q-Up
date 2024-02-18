@@ -59,7 +59,7 @@ fun MapScreen(
     facilityName: String,
     mapLatLng: LatLng,
     mapZoom: Float,
-
+    mainUiState: String
 ){
     var mapLocation: LatLng = LatLng(0.0,0.0)
 
@@ -76,7 +76,8 @@ fun MapScreen(
     Scaffold(
         topBar = {
             QueueTopAppBar(
-                title = stringResource(R.string.map_title),
+                //title = stringResource(R.string.map_title), TODO: TEMP, add back in
+                title = mainUiState,
                 canNavigateBack = canNavigateBack,
                 navigateUp = onNavigateUp
             )

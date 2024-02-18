@@ -66,7 +66,8 @@ fun AppNavGraph(
                         mapLatLng = mapLocation,
                         mapZoom = mapZoom,
                         navigateToList = {navController.navigate("${ListDestination.route}/${it}")},
-                        mainViewModel = mainViewModel
+                        mainViewModel = mainViewModel,
+                        mainUiState = mainViewModel.mainUiState
                     )
                 }
             }
@@ -84,7 +85,8 @@ fun AppNavGraph(
                     onNavigateUp = { navController.navigate("${MapDestination.route}/${it}") },
                     facilityName = facilityName,
                     navigateToMap = { navController.navigate("${MapDestination.route}/${it}") },
-                    mainViewModel = mainViewModel
+                    mainViewModel = mainViewModel,
+                    listUiState = mainViewModel.mainUiState
                 )
             }
         }
