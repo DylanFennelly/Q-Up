@@ -76,8 +76,7 @@ fun MapScreen(
     Scaffold(
         topBar = {
             QueueTopAppBar(
-                //title = stringResource(R.string.map_title), TODO: TEMP, add back in
-                title = mainUiState,
+                title = stringResource(R.string.map_title),
                 canNavigateBack = canNavigateBack,
                 navigateUp = onNavigateUp
             )

@@ -2,8 +2,12 @@ package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
@@ -48,8 +52,12 @@ fun ListScreen(
             )
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.facility.value.name) }) }
-    ) {
-
+    ) {innerPadding ->
+        Box(modifier = androidx.compose.ui.Modifier.padding(innerPadding)) {
+            Column {
+                Text(text = listUiState)
+            }
+        }
 
     }
 }
