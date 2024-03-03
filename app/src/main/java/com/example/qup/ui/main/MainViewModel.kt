@@ -13,6 +13,7 @@ import com.example.qup.data.FacilityRepository
 import com.example.qup.network.FacilityApi
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 sealed interface MainUiState {
     data class Success(val attractions: List<Attraction>) : MainUiState
@@ -50,10 +51,15 @@ class MainViewModel(
     private fun getFacilityAttractions(){
         Log.i("ViewModel","Starting API request")
         viewModelScope.launch {
-            Log.i("ViewModel","Starting coroutine")
-            val listResult = FacilityApi.retrofitService.getAttractions()
-            Log.i("ViewModel", "API result: $listResult")
-            mainUiState = listResult
+            try {
+                Log.i("ViewModel", "Starting coroutine")
+                val listResult = FacilityApi.retrofitService.getAttractions()
+                Log.i("ViewModel", "API result: $listResult")
+                mainUiState = listResult
+            }catch (e: IOException){
+                //TODO: Handle exception
+                Log.e("ViewModel", "Error on API Call: $e")
+            }
         }
     }
 
