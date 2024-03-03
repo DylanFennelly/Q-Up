@@ -59,7 +59,7 @@ fun MapScreen(
     facilityName: String,
     mapLatLng: LatLng,
     mapZoom: Float,
-    mainUiState: String
+    mainUiState: MainUiState
 ){
     var mapLocation: LatLng = LatLng(0.0,0.0)
 

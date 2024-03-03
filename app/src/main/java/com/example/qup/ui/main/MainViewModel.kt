@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 sealed interface MainUiState {
-    data class Success(val attractions: List<Attraction>) : MainUiState
+    data class Success(val attractions: String) : MainUiState
     object Error : MainUiState
     object Loading : MainUiState
 }
@@ -28,7 +28,7 @@ class MainViewModel(
     //state of facility obtained from request
     val facility = mutableStateOf<Facility>(Facility("", LatLng(0.0,0.0), 0f, emptyList()))
     //private val facilityName: String = checkNotNull(savedStateHandle[MapDestination.facility])
-    var mainUiState: String by mutableStateOf("")
+    var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
         private set
 
     fun retrieveFacility(facilityName: String){
@@ -51,14 +51,15 @@ class MainViewModel(
     private fun getFacilityAttractions(){
         Log.i("ViewModel","Starting API request")
         viewModelScope.launch {
-            try {
+            mainUiState = try {
                 Log.i("ViewModel", "Starting coroutine")
                 val listResult = FacilityApi.retrofitService.getAttractions()
                 Log.i("ViewModel", "API result: $listResult")
-                mainUiState = listResult
+                MainUiState.Success(listResult)
             }catch (e: IOException){
                 //TODO: Handle exception
                 Log.e("ViewModel", "Error on API Call: $e")
+                MainUiState.Error
             }
         }
     }
