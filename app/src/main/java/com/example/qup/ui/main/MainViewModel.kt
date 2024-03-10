@@ -55,7 +55,7 @@ class MainViewModel(
                 Log.i("ViewModel", "Starting coroutine")
                 val listResult = FacilityApi.retrofitService.getAttractions()
                 Log.i("ViewModel", "API result: $listResult")
-                MainUiState.Success(listResult)
+                MainUiState.Success("Status Code: ${listResult.statusCode}\n${listResult.body}")
             }catch (e: IOException){
                 //TODO: Handle exception
                 Log.e("ViewModel", "Error on API Call: $e")

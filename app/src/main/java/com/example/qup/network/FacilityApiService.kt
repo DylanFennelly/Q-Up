@@ -1,7 +1,10 @@
 package com.example.qup.network
 
+import com.example.qup.data.testAttraction
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 
 //Handles API calls
@@ -9,7 +12,7 @@ import retrofit2.http.GET
 private const val BASE_TEST_URL = "https://owhvjc8fwj.execute-api.eu-west-1.amazonaws.com/q-up-test-api-stage/"     //todo: not hardcoded
 
 private val retrofit = Retrofit.Builder()
-    .addConverterFactory(ScalarsConverterFactory.create())
+    .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
     .baseUrl(BASE_TEST_URL)
     .build()
 
@@ -21,5 +24,6 @@ object FacilityApi {
 
 interface FacilityApiService{
     @GET("test-data")
-    suspend fun getAttractions(): String
+    //suspend fun getAttractions(): List<testAttraction>
+    suspend fun getAttractions(): testAttraction
 }
