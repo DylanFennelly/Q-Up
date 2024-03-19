@@ -6,7 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.NetworkFacilityRepository
@@ -53,7 +58,6 @@ class MainViewModel(
         viewModelScope.launch {
             mainUiState = try {
                 Log.i("ViewModel", "Starting coroutine")
-                val facilityRepository = NetworkFacilityRepository()
                 val listResult = facilityRepository.getAttractions()
                 Log.i("ViewModel", "API result: $listResult")
                 MainUiState.Success("Status Code: ${listResult.statusCode}\n${listResult.body}")
