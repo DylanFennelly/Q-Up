@@ -2,7 +2,7 @@ package com.example.qup.app
 
 import com.example.qup.data.FacilityData
 import com.example.qup.data.FacilityRepository
-import com.example.qup.data.AppFacilityRepository
+import com.example.qup.data.NetworkFacilityRepository
 
 //Container to instantiate data repositories
 interface AppContainer {
@@ -11,6 +11,6 @@ interface AppContainer {
 
 class AppDataContainer: AppContainer{
     override val facilityRepository: FacilityRepository by lazy {
-        AppFacilityRepository(FacilityData())
+        NetworkFacilityRepository()
     }
 }
