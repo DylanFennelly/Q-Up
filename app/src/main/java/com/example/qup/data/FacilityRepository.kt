@@ -4,13 +4,9 @@ import com.example.qup.network.FacilityApiService
 
 //middle-man between data and application
 interface FacilityRepository {
-//    suspend fun getFacilities(): List<Facility>
-    suspend fun getAttractions(): testAttraction
+    suspend fun getAttractions(): ApiResponse
 }
 
 class NetworkFacilityRepository(private val facilityApiService: FacilityApiService): FacilityRepository{
-//    override suspend fun getFacilities(): List<Facility> {
-//        return FacilityApi.retrofitService.getAttractions()
-//    }
-    override suspend fun getAttractions(): testAttraction = facilityApiService.getAttractions()
+    override suspend fun getAttractions(): ApiResponse = facilityApiService.getAttractions()
 }

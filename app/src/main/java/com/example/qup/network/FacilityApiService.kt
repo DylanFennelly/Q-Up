@@ -1,5 +1,6 @@
 package com.example.qup.network
 
+import com.example.qup.data.ApiResponse
 import com.example.qup.data.testAttraction
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
@@ -10,6 +11,5 @@ import retrofit2.http.GET
 //Handles API calls
 interface FacilityApiService{
     @GET("test-data")
-    //suspend fun getAttractions(): List<testAttraction>
-    suspend fun getAttractions(): testAttraction
+    suspend fun getAttractions(): ApiResponse
 }

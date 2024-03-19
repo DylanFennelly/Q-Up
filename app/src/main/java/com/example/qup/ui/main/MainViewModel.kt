@@ -15,12 +15,13 @@ import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.NetworkFacilityRepository
+import com.example.qup.data.testAttraction
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.IOException
 
 sealed interface MainUiState {
-    data class Success(val attractions: String) : MainUiState
+    data class Success(val attractions: List<testAttraction>) : MainUiState
     object Error : MainUiState
     object Loading : MainUiState
 }
@@ -59,8 +60,8 @@ class MainViewModel(
             mainUiState = try {
                 Log.i("ViewModel", "Starting coroutine")
                 val listResult = facilityRepository.getAttractions()
-                Log.i("ViewModel", "API result: $listResult")
-                MainUiState.Success("Status Code: ${listResult.statusCode}\n${listResult.body}")
+                Log.i("ViewModel", "API result: $listResult.attractionList")
+                MainUiState.Success(listResult.list)
             }catch (e: IOException){
                 //TODO: Handle exception
                 Log.e("ViewModel", "Error on API Call: $e")

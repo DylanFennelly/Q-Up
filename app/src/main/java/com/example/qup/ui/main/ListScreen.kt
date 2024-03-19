@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.data.testAttraction
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.navigation.NavigationDestination
 
@@ -62,7 +63,7 @@ fun ListScreen(
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.facility.value.name) }) }
     ) {innerPadding ->
 
-        Box(modifier = androidx.compose.ui.Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.padding(innerPadding)) {
             when(listUiState){
                 is MainUiState.Loading -> ListLoading()
                 is MainUiState.Success -> ListBody(listUiState.attractions)
@@ -74,11 +75,15 @@ fun ListScreen(
 
 @Composable
 fun ListBody(
-    attractions: String,
+    attractions: List<testAttraction>,
     modifier: Modifier = Modifier
 ){
     Column {
-        Text(text = attractions)
+        for (attraction in attractions) {
+            Text(text = attraction.name)
+            Text(text = "${attraction.lat}")
+            Text(text = "${attraction.lng}")
+        }
     }
 }
 
