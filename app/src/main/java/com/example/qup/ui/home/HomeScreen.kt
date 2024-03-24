@@ -80,12 +80,6 @@ fun HomeBody(
         ) {
             Text(text = stringResource(R.string.setu_button))
         }
-        Button(
-            onClick = { onButtonClick("Emerald Park") },
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.emerald_green))
-        ) {
-            Text(text = stringResource(R.string.emerald_park_button))
-        }
 
     }
 

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.testAttraction
+import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -21,19 +22,25 @@ sealed interface MainUiState {
 }
 
 class MainViewModel(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository
 ): ViewModel() {
-    //state of facility obtained from request
-    //TODO - UN-HARDCODE SETU NAME
-    val facility = mutableStateOf<Facility>(Facility("SETU", LatLng(0.0,0.0), 0f, emptyList()))
-    //private val facilityName: String = checkNotNull(savedStateHandle[MapDestination.facility])
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
         private set
 
     init{
         Log.i("ViewModel","MainViewModel Init")
         getFacilityAttractions()
+        //savedStateHandle["facilityName"] = MapDestination.facility
+    }
+
+    fun getFacilityName(): String{
+        // get value from savedStateHandle
+        return checkNotNull(savedStateHandle["facilityName"])
+    }
+
+    fun setFacilityName(facilityName : String){
+        savedStateHandle["facilityName"] = facilityName
     }
 
     private fun getFacilityAttractions(){
@@ -45,7 +52,6 @@ class MainViewModel(
                 Log.i("ViewModel", "API result: $listResult.attractionList")
                 MainUiState.Success(listResult.list)
             }catch (e: IOException){
-                //TODO: Handle exception
                 Log.e("ViewModel", "Error on API Call: $e")
                 MainUiState.Error
             }

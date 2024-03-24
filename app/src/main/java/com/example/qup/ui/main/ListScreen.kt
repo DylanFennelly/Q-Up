@@ -29,8 +29,8 @@ import com.example.qup.ui.navigation.NavigationDestination
 object ListDestination: NavigationDestination {
     override val route = "list"
     override val titleRes = R.string.attraction_list_button
-    const val facility = "facility"             //determines which attraction data to load
-    val routeWithArgs = "$route/{$facility}"
+//    const val facility = "facility"             //determines which attraction data to load
+//    val routeWithArgs = "$route/{$facility}"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,10 +49,10 @@ fun ListScreen(
             QueueTopAppBar(
                 title = stringResource(R.string.attraction_list_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp(mainViewModel.facility.value.name)}
+                navigateUp = {onNavigateUp(mainViewModel.getFacilityName())}
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.facility.value.name) }) }
+        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) }
     ) {innerPadding ->
 
         Box(modifier = Modifier.padding(innerPadding)) {

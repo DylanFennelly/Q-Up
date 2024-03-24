@@ -42,9 +42,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 object MapDestination: NavigationDestination {
     override val route = "map"
     override val titleRes = R.string.map_title
-    const val facility = "facility"             //determines which attraction data to load
-    val routeWithArgs = "$route/{$facility}"
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +68,7 @@ fun MapScreen(
                 navigateUp = onNavigateUp
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.facility.value.name)})}
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.getFacilityName())})}
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when(mainUiState) {
