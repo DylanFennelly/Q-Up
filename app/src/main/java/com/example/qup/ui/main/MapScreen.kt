@@ -60,6 +60,10 @@ fun MapScreen(
     mapZoom: Float,
     mainUiState: MainUiState
 ){
+//    LaunchedEffect(facilityName){
+//        mainViewModel.getFacilityAttractions()
+//    }
+    //TODO: Add API refresh button
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -72,13 +76,13 @@ fun MapScreen(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when(mainUiState) {
-                is MainUiState.Loading -> {}
+                is MainUiState.Loading -> MapLoading()
                 is MainUiState.Success -> MapBody(
                     attractions = mainUiState.attractions,
                     latLng = mapLatLng,
                     zoom = mapZoom
                 )
-                is MainUiState.Error -> {}
+                is MainUiState.Error -> MapError()
             }
         }
     }

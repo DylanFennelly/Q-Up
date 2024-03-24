@@ -30,8 +30,7 @@ class MainViewModel(
 
     init{
         Log.i("ViewModel","MainViewModel Init")
-        getFacilityAttractions()
-        //savedStateHandle["facilityName"] = MapDestination.facility
+        //getFacilityAttractions()
     }
 
     fun getFacilityName(): String{
@@ -43,7 +42,8 @@ class MainViewModel(
         savedStateHandle["facilityName"] = facilityName
     }
 
-    private fun getFacilityAttractions(){
+    //TODO: Add URL String input to function and facilityRepo function
+    fun getFacilityAttractions(){
         Log.i("ViewModel","Starting API request")
         viewModelScope.launch {
             mainUiState = try {

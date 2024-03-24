@@ -37,6 +37,7 @@ fun AppNavGraph(
                 HomeScreen(
                     navigateToMap = {
                         mainViewModel.setFacilityName(it)
+                        mainViewModel.getFacilityAttractions()
                         navController.navigate(MapDestination.route)
                     }
                 )
