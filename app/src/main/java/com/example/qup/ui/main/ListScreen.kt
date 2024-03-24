@@ -44,14 +44,6 @@ fun ListScreen(
     facilityName: String,
     listUiState: MainUiState
 ){
-    LaunchedEffect(facilityName) {
-        //only get facility if store facility name doesnt match route name
-        if (mainViewModel.facility.value.name != facilityName) {
-            Log.i("GET", "Facility Name does not match route, getting facility")
-            mainViewModel.retrieveFacility(facilityName)
-        }
-    }
-
     Scaffold(
         topBar = {
             QueueTopAppBar(
