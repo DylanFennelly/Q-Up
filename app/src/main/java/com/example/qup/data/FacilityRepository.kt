@@ -1,10 +1,12 @@
 package com.example.qup.data
 
+import com.example.qup.network.FacilityApiService
+
 //middle-man between data and application
 interface FacilityRepository {
-    suspend fun getFacilities(): List<Facility>
+    suspend fun getAttractions(): ApiResponse
 }
 
-class AppFacilityRepository(private val facilityData: FacilityData): FacilityRepository{
-    override suspend fun getFacilities() = facilityData.getFacilities()
+class NetworkFacilityRepository(private val facilityApiService: FacilityApiService): FacilityRepository{
+    override suspend fun getAttractions(): ApiResponse = facilityApiService.getAttractions()
 }

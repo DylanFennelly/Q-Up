@@ -1,11 +1,15 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,15 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
-import com.example.qup.data.Facility
-import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.data.testAttraction
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -38,9 +42,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 object MapDestination: NavigationDestination {
     override val route = "map"
     override val titleRes = R.string.map_title
-    const val facility = "facility"             //determines which attraction data to load
-    val routeWithArgs = "$route/{$facility}"
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,21 +50,20 @@ object MapDestination: NavigationDestination {
 fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
+    //navigateToMap: (String) -> Unit,
+    navigateToList: (String) -> Unit,
     modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    mainViewModel: MainViewModel,
     navController: NavController = rememberNavController(),
     facilityName: String,
     mapLatLng: LatLng,
-    mapZoom: Float
+    mapZoom: Float,
+    mainUiState: MainUiState
 ){
-    var mapLocation: LatLng = LatLng(0.0,0.0)
-
-    //https://medium.com/@sujathamudadla1213/what-is-launchedeffect-coroutine-api-android-jetpack-compose-76d568b79e63
-    LaunchedEffect(facilityName) {
-        mapViewModel.retrieveFacility(facilityName)
-
-    }
-
+//    LaunchedEffect(facilityName){
+//        mainViewModel.getFacilityAttractions()
+//    }
+    //TODO: Add API refresh button
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -71,20 +71,25 @@ fun MapScreen(
                 canNavigateBack = canNavigateBack,
                 navigateUp = onNavigateUp
             )
-        }
+        },
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.getFacilityName())})}
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            MapBody(
-                facility = mapViewModel.facility.value,
-                latLng =  mapLatLng,
-                zoom = mapZoom
-            )
+            when(mainUiState) {
+                is MainUiState.Loading -> MapLoading()
+                is MainUiState.Success -> MapBody(
+                    attractions = mainUiState.attractions,
+                    latLng = mapLatLng,
+                    zoom = mapZoom
+                )
+                is MainUiState.Error -> MapError()
+            }
         }
     }
 }
 @Composable
 fun MapBody(
-    facility: Facility,
+    attractions: List<testAttraction>,
     latLng: LatLng,
     zoom: Float
 ){
@@ -99,10 +104,11 @@ fun MapBody(
             modifier = Modifier,
             cameraPositionState = cameraPositionState
         ) {
-            for (attraction in facility.Attractions) {
+            for (attraction in attractions) {
                 //https://www.boltuix.com/2022/11/custom-info-window-on-map-marker-clicks.html
+                val attractionLatLng = LatLng(attraction.lat, attraction.lng)
                 MarkerInfoWindow(
-                    state = MarkerState(attraction.latlng),
+                    state = MarkerState(attractionLatLng),
                     onInfoWindowClick = {
                         Toast.makeText(
                             context,
@@ -135,5 +141,32 @@ fun MapBody(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun MapLoading(modifier: Modifier = Modifier){
+    Image(
+        modifier = modifier.size(200.dp),
+        painter = painterResource(R.drawable.loading_img),
+        contentDescription = stringResource(R.string.loading)
+    )
+}
+
+@Composable
+fun MapError(modifier: Modifier = Modifier){
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_connection_error),
+            contentDescription = ""
+        )
+        Text(
+            text = stringResource(R.string.loading_failed),
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
