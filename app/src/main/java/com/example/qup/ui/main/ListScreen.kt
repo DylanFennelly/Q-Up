@@ -3,18 +3,31 @@ package com.example.qup.ui.main
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -44,6 +57,8 @@ fun ListScreen(
     facilityName: String,
     listUiState: MainUiState
 ){
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -58,7 +73,16 @@ fun ListScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             when(listUiState){
                 is MainUiState.Loading -> ListLoading()
-                is MainUiState.Success -> ListBody(listUiState.attractions)
+                is MainUiState.Success -> {
+                    ListBody(
+                        attractions = listUiState.attractions,
+                        onItemClick = {},    //TODO Add click function
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    )
+                }
                 is MainUiState.Error -> ListError()
             }
         }
@@ -68,13 +92,36 @@ fun ListScreen(
 @Composable
 fun ListBody(
     attractions: List<testAttraction>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: (testAttraction) -> Unit
 ){
-    Column {
-        for (attraction in attractions) {
-            Text(text = attraction.name)
-            Text(text = "${attraction.lat}")
-            Text(text = "${attraction.lng}")
+    LazyColumn{
+        items(attractions) {attraction ->
+            AttractionItem(attraction, Modifier
+                .padding(8.dp)
+                .clickable { onItemClick(attraction) }
+            )
+        }
+    }
+
+}
+
+@Composable
+fun AttractionItem(attraction: testAttraction, modifier: Modifier = Modifier){
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+        ) {
+            Text(
+                text = attraction.name,
+                style = MaterialTheme.typography.titleLarge
+            )
         }
     }
 }
