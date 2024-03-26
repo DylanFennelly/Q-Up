@@ -1,7 +1,6 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,21 +21,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
-import com.example.qup.data.testAttraction
-import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.data.Attraction
 import com.example.qup.ui.navigation.NavigationDestination
 
 object ListDestination: NavigationDestination {
@@ -91,9 +86,9 @@ fun ListScreen(
 
 @Composable
 fun ListBody(
-    attractions: List<testAttraction>,
+    attractions: List<Attraction>,
     modifier: Modifier = Modifier,
-    onItemClick: (testAttraction) -> Unit
+    onItemClick: (Attraction) -> Unit
 ){
     LazyColumn{
         items(attractions) {attraction ->
@@ -107,7 +102,7 @@ fun ListBody(
 }
 
 @Composable
-fun AttractionItem(attraction: testAttraction, modifier: Modifier = Modifier){
+fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),

@@ -1,7 +1,6 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
-import com.example.qup.data.testAttraction
+import com.example.qup.data.Attraction
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -89,7 +87,7 @@ fun MapScreen(
 }
 @Composable
 fun MapBody(
-    attractions: List<testAttraction>,
+    attractions: List<Attraction>,
     latLng: LatLng,
     zoom: Float
 ){
