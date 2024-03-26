@@ -7,11 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.testAttraction
-import com.example.qup.ui.navigation.NavigationDestination
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 import java.io.IOException
 
