@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -137,7 +138,8 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
                 )
                 Text(
                     text = attraction.status,
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = statusColor(staus = attraction.status)
                 )
             }
         }
@@ -171,6 +173,17 @@ fun ListError(modifier: Modifier = Modifier){
     }
 }
 
+@Composable
+fun statusColor(staus: String): Color{
+    return when (staus.lowercase()){
+        "open" -> colorResource(id = R.color.open_green)
+        "closed" -> colorResource(id = R.color.closed_red)
+        "maintenance" -> colorResource(id = R.color.maintenance_yellow)
+        else -> Color.White
+    }
+
+}
+
 @Preview(showBackground = true)
 @Composable
 fun AttractionItemPreview(){
@@ -183,7 +196,7 @@ fun AttractionItemPreview(){
                     description = "The Walton Building is located on the Institute’s main Cork Road campus close to the award-winning Institute library, Luke Wadding Library.  Named after Ernest TS Walton (the Co Waterford-born Nobel Physics Laureate) the 3,000 square metre Walton Building greatly enhances and expands the Institute’s world-class information and communications infrastructure. \n" +
                             "The 18 large computer laboratories in the building each feature an innovative passive air movement system that helps ensure comfortable learning conditions for users. A daylight-filled central atrium located alongside the entrance accommodates all circulation and social spaces.",
                     type = "School",
-                    status = "Open",
+                    status = "Maintenance",
                     cost = 0f,
                     length = 6f,
                     lat = 52.2457368280431,
