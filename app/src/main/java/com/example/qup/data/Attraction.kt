@@ -1,8 +1,16 @@
 package com.example.qup.data
 
-import com.google.android.gms.maps.model.LatLng
+import kotlinx.serialization.Serializable
 
-data class Attraction (
-    var name: String,       //attraction name
-    var latlng: LatLng      //attraction coordinates
+@Serializable
+data class Attraction(
+    val id: Int,
+    val name: String,
+    val description: String,
+    val type: String,
+    val status: String,
+    val cost: Float,
+    val length: Float,
+    val lat: Double,
+    val lng: Double
 )

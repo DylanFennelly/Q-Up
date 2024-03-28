@@ -1,7 +1,6 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,22 +21,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
-import com.example.qup.data.testAttraction
-import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.data.Attraction
 import com.example.qup.ui.navigation.NavigationDestination
+import com.example.qup.ui.theme.QueueTheme
 
 object ListDestination: NavigationDestination {
     override val route = "list"
@@ -91,9 +89,9 @@ fun ListScreen(
 
 @Composable
 fun ListBody(
-    attractions: List<testAttraction>,
+    attractions: List<Attraction>,
     modifier: Modifier = Modifier,
-    onItemClick: (testAttraction) -> Unit
+    onItemClick: (Attraction) -> Unit
 ){
     LazyColumn{
         items(attractions) {attraction ->
@@ -107,21 +105,43 @@ fun ListBody(
 }
 
 @Composable
-fun AttractionItem(attraction: testAttraction, modifier: Modifier = Modifier){
+fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+        Column(
+
         ) {
-            Text(
-                text = attraction.name,
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    text = attraction.name,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.Bottom),
+                    text = attraction.type,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = attraction.status,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = statusColor(staus = attraction.status)
+                )
+            }
         }
     }
 }
@@ -149,6 +169,39 @@ fun ListError(modifier: Modifier = Modifier){
         Text(
             text = stringResource(R.string.loading_failed),
             modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Composable
+fun statusColor(staus: String): Color{
+    return when (staus.lowercase()){
+        "open" -> colorResource(id = R.color.open_green)
+        "closed" -> colorResource(id = R.color.closed_red)
+        "maintenance" -> colorResource(id = R.color.maintenance_yellow)
+        else -> Color.White
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AttractionItemPreview(){
+    QueueTheme {
+        AttractionItem(
+            attraction =
+                Attraction(
+                    id = 1,
+                    name = "Walton Building",
+                    description = "The Walton Building is located on the Institute’s main Cork Road campus close to the award-winning Institute library, Luke Wadding Library.  Named after Ernest TS Walton (the Co Waterford-born Nobel Physics Laureate) the 3,000 square metre Walton Building greatly enhances and expands the Institute’s world-class information and communications infrastructure. \n" +
+                            "The 18 large computer laboratories in the building each feature an innovative passive air movement system that helps ensure comfortable learning conditions for users. A daylight-filled central atrium located alongside the entrance accommodates all circulation and social spaces.",
+                    type = "School",
+                    status = "Maintenance",
+                    cost = 0f,
+                    length = 6f,
+                    lat = 52.2457368280431,
+                    lng = -7.137318108777412
+                )
         )
     }
 }

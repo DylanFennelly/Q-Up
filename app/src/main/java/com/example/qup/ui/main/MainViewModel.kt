@@ -7,16 +7,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.qup.data.Facility
 import com.example.qup.data.FacilityRepository
-import com.example.qup.data.testAttraction
-import com.example.qup.ui.navigation.NavigationDestination
-import com.google.android.gms.maps.model.LatLng
+import com.example.qup.data.Attraction
 import kotlinx.coroutines.launch
 import java.io.IOException
 
 sealed interface MainUiState {
-    data class Success(val attractions: List<testAttraction>) : MainUiState
+    data class Success(val attractions: List<Attraction>) : MainUiState
     object Error : MainUiState
     object Loading : MainUiState
 }
@@ -50,7 +47,7 @@ class MainViewModel(
                 Log.i("ViewModel", "Starting coroutine")
                 val listResult = facilityRepository.getAttractions()
                 Log.i("ViewModel", "API result: $listResult.attractionList")
-                MainUiState.Success(listResult.list)
+                MainUiState.Success(listResult.body)
             }catch (e: IOException){
                 Log.e("ViewModel", "Error on API Call: $e")
                 MainUiState.Error

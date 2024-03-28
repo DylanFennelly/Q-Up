@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApiResponse (
     val statusCode: Int,
-    val list: List<testAttraction>
+    val body: List<Attraction>
 )
