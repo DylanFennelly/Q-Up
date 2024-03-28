@@ -27,12 +27,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
 import com.example.qup.ui.navigation.NavigationDestination
+import com.example.qup.ui.theme.QueueTheme
 
 object ListDestination: NavigationDestination {
     override val route = "list"
@@ -127,7 +129,9 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
                     .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
             ) {
                 Text(
-                    modifier = Modifier.weight(1f).align(Alignment.Bottom),
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.Bottom),
                     text = attraction.type,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -163,6 +167,28 @@ fun ListError(modifier: Modifier = Modifier){
         Text(
             text = stringResource(R.string.loading_failed),
             modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AttractionItemPreview(){
+    QueueTheme {
+        AttractionItem(
+            attraction =
+                Attraction(
+                    id = 1,
+                    name = "Walton Building",
+                    description = "The Walton Building is located on the Institute’s main Cork Road campus close to the award-winning Institute library, Luke Wadding Library.  Named after Ernest TS Walton (the Co Waterford-born Nobel Physics Laureate) the 3,000 square metre Walton Building greatly enhances and expands the Institute’s world-class information and communications infrastructure. \n" +
+                            "The 18 large computer laboratories in the building each feature an innovative passive air movement system that helps ensure comfortable learning conditions for users. A daylight-filled central atrium located alongside the entrance accommodates all circulation and social spaces.",
+                    type = "School",
+                    status = "Open",
+                    cost = 0f,
+                    length = 6f,
+                    lat = 52.2457368280431,
+                    lng = -7.137318108777412
+                )
         )
     }
 }
