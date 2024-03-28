@@ -108,15 +108,34 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+        Column(
+
         ) {
-            Text(
-                text = attraction.name,
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    text = attraction.name,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f).align(Alignment.Bottom),
+                    text = attraction.type,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = attraction.status,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
         }
     }
 }
