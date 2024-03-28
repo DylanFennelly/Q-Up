@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.qup.app.QueueApplicationContainer
+import com.example.qup.ui.attraction.AttractionViewModel
 import com.example.qup.ui.home.HomeViewModel
 import com.example.qup.ui.main.MainViewModel
 
@@ -17,6 +18,12 @@ object AppViewModelProvider{
         }
         initializer {
             MainViewModel(
+                this.createSavedStateHandle(),
+                queueApplicationContainer().container.facilityRepository
+            )
+        }
+        initializer {
+            AttractionViewModel(
                 this.createSavedStateHandle(),
                 queueApplicationContainer().container.facilityRepository
             )

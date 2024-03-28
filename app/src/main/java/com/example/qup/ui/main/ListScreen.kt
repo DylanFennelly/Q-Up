@@ -50,7 +50,8 @@ object ListDestination: NavigationDestination {
 fun ListScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: (String) -> Unit,
-    navigateToMap: (String) -> Unit,
+    navigateToMap: (String) -> Unit,    //TODO: change to take no input (input String is not used)
+    navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
     facilityName: String,
     listUiState: MainUiState
@@ -74,7 +75,7 @@ fun ListScreen(
                 is MainUiState.Success -> {
                     ListBody(
                         attractions = listUiState.attractions,
-                        onItemClick = {},    //TODO Add click function
+                        onItemClick = navigateToAttraction,    //TODO Add click function
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
@@ -91,13 +92,13 @@ fun ListScreen(
 fun ListBody(
     attractions: List<Attraction>,
     modifier: Modifier = Modifier,
-    onItemClick: (Attraction) -> Unit
+    onItemClick: (Int) -> Unit
 ){
     LazyColumn{
-        items(attractions) {attraction ->
+        items(attractions.sortedBy { it.name }) {attraction ->
             AttractionItem(attraction, Modifier
                 .padding(8.dp)
-                .clickable { onItemClick(attraction) }
+                .clickable { onItemClick(attraction.id) }
             )
         }
     }

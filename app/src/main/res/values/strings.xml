@@ -8,6 +8,7 @@
     <string name="join_queue_button">Join Queue</string>
     <string name="emerald_park_button">Enter Emerald Park</string>
     <string name="attraction_list_button">Attraction List</string>
+    <string name="attraction_detail_button">Attraction Details</string>
     <string name="map_button">Attraction List</string>
     <string name="loading">Loading...</string>
     <string name="loading_failed">Failed to load result. Check internet connection and try again.</string>
