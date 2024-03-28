@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -115,11 +119,10 @@ fun MapBody(
                         ).show()
                     }
                 ) { marker ->
-                    Box(
-                        modifier = Modifier.background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(20.dp)
-                        )
+                    Card(
+                        modifier = Modifier,
+                        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+                        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
                     ) {
                         Column(
                             modifier = Modifier.padding(8.dp),
@@ -128,9 +131,23 @@ fun MapBody(
                             Text(
                                 text = attraction.name,
                                 style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            Button(onClick = { }) {    //button is not clickable, whole window is rendered as image -> https://stackoverflow.com/questions/15924045/how-to-make-the-content-in-the-marker-info-window-clickable-in-android
+                            Text(
+                                text = "Status",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(bottom = 2.dp)
+                            )
+                            Text(
+                                text = attraction.status,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                color = statusColor(staus = attraction.status)
+                            )
+                            Button(
+                                onClick = { }, 
+                                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.baby_blue))
+                            ) {    //button is not clickable, whole window is rendered as image -> https://stackoverflow.com/questions/15924045/how-to-make-the-content-in-the-marker-info-window-clickable-in-android
                                 Text(text = stringResource(id = R.string.join_queue_button))
                             }
 

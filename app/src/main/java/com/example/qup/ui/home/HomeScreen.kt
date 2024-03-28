@@ -76,11 +76,10 @@ fun HomeBody(
         )
         Button(
             onClick = { onButtonClick("SETU") },        //TODO: Change to use actual data, not raw string
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.setu_grey))
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue))
         ) {
-            Text(text = stringResource(R.string.setu_button))
+            Text(text = "Enter Facility")
         }
-
     }
 
 }
