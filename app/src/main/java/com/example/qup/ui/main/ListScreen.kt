@@ -110,7 +110,7 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.light_baby_blue), contentColor = colorResource(id = R.color.black))
     ) {
         Column(
 
@@ -177,7 +177,7 @@ fun ListError(modifier: Modifier = Modifier){
 @Composable
 fun statusColor(staus: String): Color{
     return when (staus.lowercase()){
-        "open" -> colorResource(id = R.color.open_green)
+        "open" -> colorResource(id = R.color.emerald_green)
         "closed" -> colorResource(id = R.color.closed_red)
         "maintenance" -> colorResource(id = R.color.maintenance_yellow)
         else -> Color.White
@@ -199,7 +199,7 @@ fun AttractionItemPreview(){
                     type = "School",
                     status = "Maintenance",
                     cost = 0f,
-                    length = 6f,
+                    length = 6,
                     lat = 52.2457368280431,
                     lng = -7.137318108777412
                 )

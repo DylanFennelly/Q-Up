@@ -122,7 +122,7 @@ fun MapBody(
                     Card(
                         modifier = Modifier,
                         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
-                        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
+                        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.light_baby_blue), contentColor = colorResource(id = R.color.black))
                     ) {
                         Column(
                             modifier = Modifier.padding(8.dp),
