@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +42,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 
 object MapDestination: NavigationDestination {
     override val route = "map"
@@ -54,6 +57,7 @@ fun MapScreen(
     onNavigateUp: () -> Unit,
     //navigateToMap: (String) -> Unit,
     navigateToList: (String) -> Unit,
+    navigateToAttraction: (Int) -> Unit,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
     navController: NavController = rememberNavController(),
@@ -82,7 +86,8 @@ fun MapScreen(
                 is MainUiState.Success -> MapBody(
                     attractions = mainUiState.attractions,
                     latLng = mapLatLng,
-                    zoom = mapZoom
+                    zoom = mapZoom,
+                    onItemClick = navigateToAttraction
                 )
                 is MainUiState.Error -> MapError()
             }
@@ -93,11 +98,14 @@ fun MapScreen(
 fun MapBody(
     attractions: List<Attraction>,
     latLng: LatLng,
-    zoom: Float
+    zoom: Float,
+    onItemClick: (Int) -> Unit
 ){
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLng, zoom)
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
 
@@ -112,11 +120,8 @@ fun MapBody(
                 MarkerInfoWindow(
                     state = MarkerState(attractionLatLng),
                     onInfoWindowClick = {
-                        Toast.makeText(
-                            context,
-                            "You have queued for ${attraction.name}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        // fixes an issue with the app freezing - https://stackoverflow.com/questions/72561687/google-maps-in-jetpack-compose-freezes
+                        coroutineScope.launch { onItemClick(attraction.id) }
                     }
                 ) { marker ->
                     Card(
@@ -145,10 +150,10 @@ fun MapBody(
                                 color = statusColor(staus = attraction.status)
                             )
                             Button(
-                                onClick = { }, 
+                                onClick = { },
                                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.baby_blue))
                             ) {    //button is not clickable, whole window is rendered as image -> https://stackoverflow.com/questions/15924045/how-to-make-the-content-in-the-marker-info-window-clickable-in-android
-                                Text(text = stringResource(id = R.string.join_queue_button))
+                                Text(text = stringResource(id = R.string.attraction_detail_button))
                             }
 
                         }

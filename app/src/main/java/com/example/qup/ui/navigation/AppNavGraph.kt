@@ -1,5 +1,6 @@
 package com.example.qup.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,7 +63,10 @@ fun AppNavGraph(
                     navController.navigate(ListDestination.route)
                 },
                 mainViewModel = mainViewModel,
-                mainUiState = mainViewModel.mainUiState
+                mainUiState = mainViewModel.mainUiState,
+                navigateToAttraction = {
+                    navController.navigate("${AttractionDestination.route}/${it}")
+                }
             )
 
         }
