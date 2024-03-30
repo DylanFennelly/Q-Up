@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -79,7 +83,30 @@ fun AttractionScreen(
                 navigateUp = {onNavigateUp(mainViewModel.getFacilityName())}
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) }
+        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) },
+
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { /*TODO*/ },
+                containerColor = colorResource(id = R.color.baby_blue),
+                contentColor = colorResource(id = R.color.white)
+                ) {
+                Row() {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(id = R.string.join_queue_button),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.join_queue_button),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                    )
+                }
+            }
+        }
     ) {innerPadding ->
         when(attractionUiState){
             is MainUiState.Loading -> {
@@ -246,7 +273,7 @@ fun AttractionDetails(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(bottom = 64.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.attraction_description_label),
