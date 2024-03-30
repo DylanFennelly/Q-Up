@@ -50,7 +50,8 @@ object ListDestination: NavigationDestination {
 fun ListScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: (String) -> Unit,
-    navigateToMap: (String) -> Unit,
+    navigateToMap: (String) -> Unit,    //TODO: change to take no input (input String is not used)
+    navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
     facilityName: String,
     listUiState: MainUiState
@@ -74,7 +75,7 @@ fun ListScreen(
                 is MainUiState.Success -> {
                     ListBody(
                         attractions = listUiState.attractions,
-                        onItemClick = {},    //TODO Add click function
+                        onItemClick = navigateToAttraction,    //TODO Add click function
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
@@ -91,13 +92,13 @@ fun ListScreen(
 fun ListBody(
     attractions: List<Attraction>,
     modifier: Modifier = Modifier,
-    onItemClick: (Attraction) -> Unit
+    onItemClick: (Int) -> Unit
 ){
     LazyColumn{
-        items(attractions) {attraction ->
+        items(attractions.sortedBy { it.name }) {attraction ->
             AttractionItem(attraction, Modifier
                 .padding(8.dp)
-                .clickable { onItemClick(attraction) }
+                .clickable { onItemClick(attraction.id) }
             )
         }
     }
@@ -109,7 +110,7 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.dark_baby_blue), contentColor = colorResource(id = R.color.white))
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.light_baby_blue), contentColor = colorResource(id = R.color.black))
     ) {
         Column(
 
@@ -176,7 +177,7 @@ fun ListError(modifier: Modifier = Modifier){
 @Composable
 fun statusColor(staus: String): Color{
     return when (staus.lowercase()){
-        "open" -> colorResource(id = R.color.open_green)
+        "open" -> colorResource(id = R.color.emerald_green)
         "closed" -> colorResource(id = R.color.closed_red)
         "maintenance" -> colorResource(id = R.color.maintenance_yellow)
         else -> Color.White
@@ -198,7 +199,7 @@ fun AttractionItemPreview(){
                     type = "School",
                     status = "Maintenance",
                     cost = 0f,
-                    length = 6f,
+                    length = 6,
                     lat = 52.2457368280431,
                     lng = -7.137318108777412
                 )
