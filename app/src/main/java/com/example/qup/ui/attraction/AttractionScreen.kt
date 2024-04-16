@@ -172,7 +172,7 @@ fun AttractionDetails(
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        text = "15 mins.",
+                        text = "${attraction.in_queue}",
                         fontWeight = FontWeight.Medium,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
@@ -339,7 +339,8 @@ fun AttractionDetailsPreview(){
                 lat = 52.2457368280431,
                 lng = -7.137318108777412,
                 avg_capacity = 15,
-                max_capacity = 25
+                max_capacity = 25,
+                in_queue = 150
             )
         )
     }

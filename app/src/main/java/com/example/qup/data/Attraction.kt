@@ -14,5 +14,6 @@ data class Attraction(
     val lat: Double = 0.0,                                 //Map latitude of attraction
     val lng: Double = 0.0,                                 //Map longitude of attraction
     val avg_capacity: Int = 0,                             //average amount of people on attraction per run
-    val max_capacity: Int= 0                               //max amount of people attraction can support
+    val max_capacity: Int = 0,                             //max amount of people attraction can support
+    val in_queue: Int = 0,                                 //number of people in queue for attraction
 )
