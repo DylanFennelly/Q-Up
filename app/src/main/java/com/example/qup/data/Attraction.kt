@@ -12,5 +12,7 @@ data class Attraction(
     val cost: Float,            //Cost of attraction    - TODO: localised currencies
     val length: Int,          //Length of attraction in seconds
     val lat: Double,            //Map latitude of attraction
-    val lng: Double             //Map longitude of attraction
+    val lng: Double,             //Map longitude of attraction
+    val avg_capacity: Int,      //average amount of people on attraction per run
+    val max_capacity: Int       //max amount of people attracition can support
 )

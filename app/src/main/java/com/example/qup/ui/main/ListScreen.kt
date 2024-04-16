@@ -201,7 +201,9 @@ fun AttractionItemPreview(){
                     cost = 0f,
                     length = 6,
                     lat = 52.2457368280431,
-                    lng = -7.137318108777412
+                    lng = -7.137318108777412,
+                    avg_capacity = 15,
+                    max_capacity = 25
                 )
         )
     }

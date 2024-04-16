@@ -3,7 +3,6 @@ package com.example.qup.ui.attraction
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -232,6 +230,22 @@ fun AttractionDetails(
                 )
             }
 
+            //Attraction length
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(id = R.string.attraction_max_cap_label),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .align(Alignment.CenterVertically)
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = "${attraction.max_capacity}",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+
             //Cost
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -323,7 +337,9 @@ fun AttractionDetailsPreview(){
                 cost = 2.50f,
                 length = 180,
                 lat = 52.2457368280431,
-                lng = -7.137318108777412
+                lng = -7.137318108777412,
+                avg_capacity = 15,
+                max_capacity = 25
             )
         )
     }

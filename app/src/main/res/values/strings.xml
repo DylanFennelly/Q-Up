@@ -17,6 +17,7 @@
     <string name="attraction_status_label">Status</string>
     <string name="attraction_queue_time_label">Estimated Queue Time</string>
     <string name="attraction_length_label">Length</string>
+    <string name="attraction_max_cap_label">Max Capacity</string>
     <string name="attraction_length_unit">sec.</string>
     <string name="attraction_cost_label">Price</string>
     <string name="attraction_location_label">Location</string>
