@@ -1,8 +1,9 @@
 package com.example.qup
 
+
+import junit.framework.Assert.assertEquals
 import org.junit.Test
 
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -11,7 +12,7 @@ import org.junit.Assert.*
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun calculateEstimatedQueueTime() {
+        assertEquals(1, com.example.qup.helpers.calculateEstimatedQueueTime(1, 1, 60))
     }
 }
