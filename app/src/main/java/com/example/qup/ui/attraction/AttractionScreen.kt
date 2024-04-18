@@ -39,6 +39,7 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
+import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.main.MainUiState
 import com.example.qup.ui.main.MainViewModel
@@ -159,6 +160,8 @@ fun AttractionDetails(
                 }
             }
 
+            val queueTime = calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+
             //Queue Time
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -172,11 +175,11 @@ fun AttractionDetails(
                         style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        text = "${attraction.in_queue}",
+                        text = "$queueTime mins.",
                         fontWeight = FontWeight.Medium,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
-                        color = queueTimeColour(time = 15)      //TODO: Hardcoded, take actual estiamed queue time
+                        color = queueTimeColour(time = queueTime)
                     )
                 }
             }
