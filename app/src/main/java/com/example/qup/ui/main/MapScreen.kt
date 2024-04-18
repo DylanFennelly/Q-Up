@@ -39,11 +39,14 @@ import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
 import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -53,6 +56,8 @@ object MapDestination: NavigationDestination {
     override val route = "map"
     override val titleRes = R.string.map_title
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -113,11 +118,14 @@ fun MapBody(
     val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
+    //MapStyle generated with: https://mapstyle.withgoogle.com/
+    val mapStyle: MapStyleOptions? = loadMapStyle(context)
 
     Column {
         GoogleMap(
             modifier = Modifier,
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(mapStyleOptions = mapStyle)
         ) {
             for (attraction in attractions) {
                 //https://www.boltuix.com/2022/11/custom-info-window-on-map-marker-clicks.html

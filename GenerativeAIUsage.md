@@ -426,3 +426,156 @@ composable(
 
 Make sure that the navArgument is correctly set for MapDestination.facility. This should allow the facilityName to be retrieved correctly in the MapScreen. If the issue persists, double-check the navigation setup and ensure that the arguments are being passed as expected.
 ```
+
+## Generative AI Usage 2.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help add custom styling to the GoogleMaps composable.
+
+#### Chat log:
+```
+User
+
+Using the GoogleMap composable, how can I hide street names on the map?
+
+
+ChatGPT
+
+To hide street names on a map using the Google Maps Composable in Jetpack Compose, you can utilize custom styling for the map. Google Maps allows you to customize the appearance of the map using a JSON style string, which can specify various features and elements to hide, show, or style differently.
+
+Here’s how you can achieve hiding street names on the map:
+
+    Create a JSON style string: You need to define a JSON style string that specifies hiding the street labels. Here’s an example of such a JSON string:
+
+json
+
+[
+  {
+    "featureType": "road",
+    "elementType": "labels",
+    "stylers": [
+      {"visibility": "off"}
+    ]
+  }
+]
+
+This JSON string targets all road labels and sets their visibility to "off".
+
+    Apply the style in your Composable: You can apply this style to your map using the GoogleMap composable from the Google Maps library for Android. Here's how you can integrate the style:
+
+kotlin
+
+import androidx.compose.runtime.Composable
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapStyleOptions
+import com.google.maps.android.compose.rememberCameraPositionState
+
+@Composable
+fun StyledMap() {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 12f) // Example coordinates
+    }
+
+    val jsonStyle = """
+        [
+          {
+            "featureType": "road",
+            "elementType": "labels",
+            "stylers": [
+              {"visibility": "off"}
+            ]
+          }
+        ]
+    """.trimIndent()
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(mapStyleOptions = MapStyleOptions(jsonStyle))
+    )
+    // You can add more composables or features to your map here
+}
+
+This code snippet demonstrates setting up a GoogleMap composable with a camera position and a custom map style that hides street names.
+
+Make sure to adjust the coordinates in CameraPosition.fromLatLngZoom to center the map according to your requirements. This approach provides a lot of flexibility, allowing you to customize different aspects of the map's appearance as desired.
+
+
+User
+
+Can I have the MapStyle as a .json file in the res directory?
+
+
+ChatGPT
+
+Yes, you can store your custom map styles in a .json file within the res directory of your Android project and then load this style into your Google Maps Composable. This method helps keep your code clean and makes it easier to manage or change the map style without modifying your Kotlin code directly.
+
+Here's how you can set this up:
+1. Create a JSON file with your style
+
+Create a JSON file in your project’s res/raw directory. For example, create a file named map_style.json inside res/raw and put your JSON style configuration there:
+
+json
+
+[
+  {
+    "featureType": "road",
+    "elementType": "labels",
+    "stylers": [
+      {"visibility": "off"}
+    ]
+  }
+]
+
+2. Load the JSON file in your Composable
+
+You can read this file in your Jetpack Compose function and apply it to the map. Here’s how to do it:
+
+kotlin
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapStyleOptions
+import com.google.maps.android.compose.rememberCameraPositionState
+import java.io.InputStream
+
+@Composable
+fun StyledMap() {
+    val context = LocalContext.current
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 12f) // Example coordinates
+    }
+
+    val mapStyleOptions: MapStyleOptions? = loadMapStyle(context)
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(mapStyleOptions = mapStyleOptions)
+    )
+}
+
+fun loadMapStyle(context: Context): MapStyleOptions? {
+    return try {
+        val rawResourceStream: InputStream = context.resources.openRawResource(R.raw.map_style)
+        val bytes = rawResourceStream.readBytes()
+        val jsonStyle = String(bytes)
+        MapStyleOptions(jsonStyle)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+In this example:
+
+    The JSON file is loaded from the res/raw directory using openRawResource(R.raw.map_style).
+    The loadMapStyle function reads the content of the JSON file into a string and constructs a MapStyleOptions object from it.
+    This MapStyleOptions is then applied to the GoogleMap composable.
+
+This approach not only makes the code cleaner but also simplifies modifications to the map's appearance, as changes to the style can be done directly in the JSON file without any adjustments to the Kotlin code.
+```

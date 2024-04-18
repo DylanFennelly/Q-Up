@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +43,7 @@ import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
 import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.main.MainUiState
 import com.example.qup.ui.main.MainViewModel
@@ -50,7 +52,9 @@ import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -272,6 +276,8 @@ fun AttractionDetails(
             val cameraPositionState = rememberCameraPositionState {
                 position = CameraPosition.fromLatLngZoom(LatLng(attraction.lat, attraction.lng), 17f)
             }
+            val context = LocalContext.current
+            val mapStyle: MapStyleOptions? = loadMapStyle(context)
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -284,7 +290,8 @@ fun AttractionDetails(
                 )
                 GoogleMap(
                     cameraPositionState = cameraPositionState,
-                    modifier = Modifier.height(225.dp)
+                    modifier = Modifier.height(225.dp),
+                    properties = MapProperties(mapStyleOptions = mapStyle)
                 ) {
                     Marker(state = MarkerState(LatLng(attraction.lat, attraction.lng))) {
 
