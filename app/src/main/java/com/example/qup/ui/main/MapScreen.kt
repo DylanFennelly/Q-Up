@@ -8,6 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +38,8 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
+import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -138,17 +143,39 @@ fun MapBody(
                                 style = MaterialTheme.typography.titleLarge,
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            Text(
-                                text = "Status",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
-                            Text(
-                                text = attraction.status,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                                color = statusColor(staus = attraction.status)
-                            )
+
+                            // if attraction is open, display queue time -> else, display status (Maintenance/Closed)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                if (attraction.status == "Open"){
+                                    val queueTime = calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+                                    Text(
+                                        text = stringResource(id = R.string.attraction_queue_time_short_label),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
+                                    Text(
+                                        text = "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                        color = queueTimeColour(time = queueTime)
+                                    )
+                                }else{
+                                    Text(
+                                        text = stringResource(id = R.string.attraction_status_label),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
+                                    Text(
+                                        text = attraction.status,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                        color = statusColor(staus = attraction.status)
+                                    )
+                                }
+                            }
+
                             Button(
                                 onClick = { },
                                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.baby_blue))

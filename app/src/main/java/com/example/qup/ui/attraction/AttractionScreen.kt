@@ -2,7 +2,9 @@ package com.example.qup.ui.attraction
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -131,9 +133,9 @@ fun AttractionDetails(
     attraction: Attraction,
     modifier: Modifier = Modifier,
 ){
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.light_baby_blue), contentColor = colorResource(id = R.color.black))
+    Box(
+        modifier = modifier
+            .background(colorResource(id = R.color.light_baby_blue)),
     ){
         Column(
             modifier = Modifier
@@ -160,27 +162,29 @@ fun AttractionDetails(
                 }
             }
 
-            val queueTime = calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
-
+            //TODO: add status message for when attraction is closed or maintenance
             //Queue Time
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ){
-                    Text(
-                        text = stringResource(id = R.string.attraction_queue_time_label),
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = "$queueTime mins.",
-                        fontWeight = FontWeight.Medium,
-                        style = MaterialTheme.typography.headlineSmall,
-                        textAlign = TextAlign.Center,
-                        color = queueTimeColour(time = queueTime)
-                    )
+            if (attraction.status == "Open") {
+                val queueTime = calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.attraction_queue_time_label),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Text(
+                            text = "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
+                            fontWeight = FontWeight.Medium,
+                            style = MaterialTheme.typography.headlineSmall,
+                            textAlign = TextAlign.Center,
+                            color = queueTimeColour(time = queueTime)
+                        )
+                    }
                 }
             }
 

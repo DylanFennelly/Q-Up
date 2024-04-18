@@ -34,6 +34,8 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.data.Attraction
+import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
 
@@ -137,11 +139,21 @@ fun AttractionItem(attraction: Attraction, modifier: Modifier = Modifier){
                     text = attraction.type,
                     style = MaterialTheme.typography.bodyLarge
                 )
-                Text(
-                    text = attraction.status,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = statusColor(staus = attraction.status)
-                )
+                // if attraction is open, display queue time -> else, display status (Maintenance/Closed)
+                if (attraction.status == "Open"){
+                    val queueTime = calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+                    Text(
+                        "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = queueTimeColour(time = queueTime)
+                    )
+                }else {
+                    Text(
+                        text = attraction.status,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = statusColor(staus = attraction.status)
+                    )
+                }
             }
         }
     }
