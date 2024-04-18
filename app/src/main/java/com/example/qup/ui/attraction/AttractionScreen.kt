@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -79,6 +81,7 @@ fun AttractionScreen(
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val attractionId = attractionViewModel.attractionId
+    val joinQueueUiState = attractionViewModel.joinQueueUiState
 
     Scaffold(
         topBar = {
@@ -91,12 +94,22 @@ fun AttractionScreen(
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) },
 
         floatingActionButton = {
+
             FloatingActionButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    attractionViewModel.joinQueueUiState = JoinQueueUiState.Loading
+                    attractionViewModel.postJoinAttractionQueue(attractionId, 0) }, //TODO: hardcoded user ID
                 containerColor = colorResource(id = R.color.baby_blue),
-                contentColor = colorResource(id = R.color.white)
+                contentColor = colorResource(id = R.color.white),
                 ) {
-                Row() {
+
+            Row() {
+                if (joinQueueUiState == JoinQueueUiState.Loading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(id = R.string.join_queue_button),
@@ -111,6 +124,8 @@ fun AttractionScreen(
                     )
                 }
             }
+            }
+
         }
     ) {innerPadding ->
         when(attractionUiState){
