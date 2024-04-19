@@ -25,20 +25,49 @@
 }
 
 h1 {
-  margin-bottom: 5px;
+  margin-bottom: 0px;
 }
 
 h2 {
-  margin-top: 20px;
+  margin-top: 5px;
   margin-bottom: 30px;
+}
+
+h3 {
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 h4 {
   margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 h5 {
+  margin-top: 0%;
+  margin-bottom: 5px;
+}
+
+.App-Name {
   margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+img{
+  margin-top: 20px;
+  max-width: 250px;
+}
+
+.Poster{
+  max-width: 350px;
+}
+
+p{
+  margin-top: 10px;
+  text-align: justify;
+  text-justify: inter-word;
+  max-width: 40%;
+  font-size: 75%;
 }
 
 .App-body {
@@ -50,6 +79,7 @@ h5 {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: black;
+  margin-bottom: 50px;
 }
 
 .App-link {
