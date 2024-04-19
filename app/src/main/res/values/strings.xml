@@ -6,6 +6,7 @@
     <string name="map_title">Attraction Map</string>
     <string name="back_button">Back</string>
     <string name="join_queue_button">Join Queue</string>
+    <string name="leave_queue_button">Leave Queue</string>
     <string name="emerald_park_button">Enter Emerald Park</string>
     <string name="attraction_list_button">Attraction List</string>
     <string name="attraction_detail_button">Attraction Details</string>
@@ -18,6 +19,7 @@
     <string name="attraction_status_label">Status</string>
     <string name="attraction_queue_time_label">Estimated Queue Time</string>
     <string name="attraction_queue_time_short_label">Est. Queue Time</string>
+    <string name="attraction_queue_time_remaining_label">Remaining Queue Time</string>
     <string name="attraction_length_label">Length</string>
     <string name="attraction_max_cap_label">Max Capacity</string>
     <string name="attraction_length_unit">sec.</string>
@@ -32,4 +34,5 @@
     <string name="join_queue_error_409_alert_desc">You are already queued for this attraction.</string>
     <string name="error_500_alert_desc">Something went wrong. Check your internet connection and try again.</string>
     <string name="alert_okay">Okay</string>
+    <string name="expand_collapse_label">Expand/Collapse</string>
 </resources>
