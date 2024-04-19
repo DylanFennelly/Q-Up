@@ -11,6 +11,9 @@ import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -45,6 +48,15 @@ class MainViewModel(
 
     var joinQueueUiState: JoinQueueUiState by mutableStateOf(JoinQueueUiState.Idle)
 
+
+    //Pull down to refresh data:
+    // https://canlioya.medium.com/customise-pull-to-refresh-on-android-with-jetpack-compose-24a7119a4b94
+    // https://medium.com/google-developer-experts/effortlessly-add-pull-to-refresh-to-your-android-app-with-jetpack-compose-4c8b218a9beb
+    private val _isRefreshing = MutableStateFlow(false)
+
+    val isRefreshing: StateFlow<Boolean>
+        get() = _isRefreshing.asStateFlow()
+
     init{
         Log.i("ViewModel","MainViewModel Init")
         //getFacilityAttractions()
@@ -58,6 +70,14 @@ class MainViewModel(
     fun setFacilityName(facilityName : String){
         savedStateHandle["facilityName"] = facilityName
     }
+
+    fun refreshData(userId: Int){
+        getFacilityAttractions()
+        getUserQueues(userId)
+    }
+
+
+    //### REQUESTS ###
 
     //TODO: Add URL String input to function and facilityRepo function
     fun getFacilityAttractions(){

@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -23,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +67,7 @@ object MapDestination: NavigationDestination {
 
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MapScreen(
@@ -80,7 +86,9 @@ fun MapScreen(
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState
 ){
-    //TODO: Add API refresh button
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -91,7 +99,10 @@ fun MapScreen(
         },
         bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, queuesSelected = false, navigateToList= {navigateToList()}, navigateToQueues = {navigateToQueues()})}
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .pullRefresh(pullRefreshState)
+        ) {
             when(mainUiState) {
                 is MainUiState.Loading -> MapLoading()
                 is MainUiState.Success -> {
@@ -110,6 +121,9 @@ fun MapScreen(
                     }
                 }
                 is MainUiState.Error -> MapError()
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
             }
         }
     }

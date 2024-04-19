@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +27,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,7 +55,7 @@ object ListDestination: NavigationDestination {
     override val titleRes = R.string.attraction_list_button
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
@@ -64,6 +70,8 @@ fun ListScreen(
     queuesUiState: QueuesUiState
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
     Scaffold(
         topBar = {
@@ -75,8 +83,10 @@ fun ListScreen(
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) }
     ) {innerPadding ->
-
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .pullRefresh(pullRefreshState)
+        ) {
             when(listUiState){
                 is MainUiState.Loading -> ListLoading()
                 is MainUiState.Success -> {
@@ -98,8 +108,14 @@ fun ListScreen(
                 }
                 is MainUiState.Error -> ListError()
             }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
+            }
+
         }
+
     }
+
 }
 
 @Composable

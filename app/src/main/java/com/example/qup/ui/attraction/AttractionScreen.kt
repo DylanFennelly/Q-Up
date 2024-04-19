@@ -15,9 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +58,7 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.JoinQueueUiState
 import com.example.qup.ui.main.ListError
 import com.example.qup.ui.main.ListLoading
 import com.example.qup.ui.main.MainUiState
@@ -75,7 +83,7 @@ object AttractionDestination: NavigationDestination {
     val routeWithArgs = "$route/{$attractionID}"
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AttractionScreen(
@@ -90,7 +98,9 @@ fun AttractionScreen(
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val attractionId = attractionViewModel.attractionId
-    val joinQueueUiState = attractionViewModel.joinQueueUiState
+    val joinQueueUiState = mainViewModel.joinQueueUiState
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
     when(attractionUiState){
         //TODO: add Loading and Error states
@@ -177,8 +187,8 @@ fun AttractionScreen(
                             else{
                                 FloatingActionButton(
                                     onClick = {
-                                        attractionViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                        attractionViewModel.postJoinAttractionQueue(attraction.id, 0)
+                                        mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
+                                        mainViewModel.postJoinAttractionQueue(attraction.id, 0)
                                     }, //TODO: hardcoded user ID
                                     containerColor = colorResource(id = R.color.baby_blue),
                                     contentColor = colorResource(id = R.color.white),
@@ -205,6 +215,7 @@ fun AttractionScreen(
                         }
 
                     ) {innerPadding ->
+                        Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                             AttractionDetails(
                                 attraction = attraction,
                                 linkedQueue = linkedQueue,
@@ -214,6 +225,10 @@ fun AttractionScreen(
                                     .verticalScroll(rememberScrollState())
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
+                            }
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
+                            }
                         }
 
                         //alert for joining queue
@@ -221,7 +236,7 @@ fun AttractionScreen(
                             is JoinQueueUiState.Result -> {
                                 AlertDialog(
                                     onDismissRequest = {
-                                        attractionViewModel.joinQueueUiState = JoinQueueUiState.Idle
+                                        mainViewModel.joinQueueUiState = JoinQueueUiState.Idle
                                     },
                                     title = {
                                         if (joinQueueUiState.statusCode == 200) {
@@ -257,7 +272,7 @@ fun AttractionScreen(
                                     },
                                     confirmButton = {
                                         TextButton(onClick = {
-                                            attractionViewModel.joinQueueUiState =
+                                            mainViewModel.joinQueueUiState =
                                                 JoinQueueUiState.Idle
                                         }
                                         ) {
@@ -280,6 +295,7 @@ fun AttractionScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AttractionDetails(
     attraction: Attraction,
@@ -288,7 +304,9 @@ fun AttractionDetails(
 ){
     Box(
         modifier = modifier
-            .background(colorResource(id = R.color.light_baby_blue)),
+            .background(
+                colorResource(id = R.color.light_baby_blue)
+            ),
     ){
         Column {
 
@@ -519,6 +537,7 @@ fun queueTimeColour(time: Int) : Color{
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true)
 @Composable
 fun AttractionDetailsPreview(){
@@ -541,7 +560,7 @@ fun AttractionDetailsPreview(){
                 max_capacity = 25,
                 in_queue = 150
             ),
-            linkedQueue = queue
+            linkedQueue = queue,
         )
     }
 }

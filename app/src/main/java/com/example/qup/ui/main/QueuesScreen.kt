@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -29,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,7 +60,7 @@ object QueuesDestination: NavigationDestination {
     override val titleRes = R.string.queues_button
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun QueuesScreen(
@@ -69,6 +75,8 @@ fun QueuesScreen(
     queuesUiState: QueuesUiState
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
     Scaffold(
         topBar = {
@@ -80,7 +88,10 @@ fun QueuesScreen(
         },
         bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = false, queuesSelected = true, navigateToMap= { navigateToMap() }, navigateToList = {navigateToList()}) }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .pullRefresh(pullRefreshState)
+        ) {
             when (mainUiState) {
                 is MainUiState.Loading -> {
                     ListLoading()}
@@ -105,6 +116,9 @@ fun QueuesScreen(
                 }
                 is MainUiState.Error -> {
                     ListError()}
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
             }
         }
     }

@@ -25,7 +25,6 @@ object AppViewModelProvider{
         initializer {
             AttractionViewModel(
                 this.createSavedStateHandle(),
-                queueApplicationContainer().container.facilityRepository
             )
         }
     }
