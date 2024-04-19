@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
+import kotlin.math.log
 
 object ListDestination: NavigationDestination {
     override val route = "list"
@@ -109,7 +111,11 @@ fun ListBody(
 ){
     LazyColumn{
         items(attractions.sortedBy { it.name }) {attraction ->
-            val linkedQueue = queues.getOrNull(attraction.id)
+            Log.d("ListScreen", "Attraction id: ${attraction.name}")
+            Log.d("ListScreen", "Attraction id: ${attraction.id}")
+            val linkedQueue = queues.find{ it.attractionId == attraction.id}
+
+            Log.d("ListScreen", "linkedQueue: $linkedQueue")
 
             AttractionItem(
                 attraction,

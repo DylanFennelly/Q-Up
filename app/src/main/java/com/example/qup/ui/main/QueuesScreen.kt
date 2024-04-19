@@ -120,7 +120,7 @@ fun QueuesListBody(
 ){
     LazyColumn{
         items(queues){ queue ->
-            val linkedAttraction = attractions.getOrNull(queue.attractionId)
+            val linkedAttraction = attractions.find{it.id == queue.attractionId}
 
             //if user somehow in queue for non-existent attractionId, skip it
             if (linkedAttraction != null) {

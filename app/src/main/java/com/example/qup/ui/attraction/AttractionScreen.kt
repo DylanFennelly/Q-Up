@@ -105,7 +105,7 @@ fun AttractionScreen(
                 is QueuesUiState.Error -> {}
                 is QueuesUiState.Success -> {
 
-                    val linkedQueue = queuesUiState.userQueues.getOrNull(attraction.id)
+                    val linkedQueue = queuesUiState.userQueues.find{it.attractionId == attraction.id}
 
                     Scaffold(
                         topBar = {
@@ -178,7 +178,7 @@ fun AttractionScreen(
                                 FloatingActionButton(
                                     onClick = {
                                         attractionViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                        attractionViewModel.postJoinAttractionQueue(attractionId, 0)
+                                        attractionViewModel.postJoinAttractionQueue(attraction.id, 0)
                                     }, //TODO: hardcoded user ID
                                     containerColor = colorResource(id = R.color.baby_blue),
                                     contentColor = colorResource(id = R.color.white),

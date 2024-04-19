@@ -9,13 +9,13 @@ data class GetAttractionsApiResponse (
 )
 
 @Serializable
-data class JoinQueueApiResponse (
+data class JoinLeaveQueueApiResponse (
     val statusCode: Int,
     val body: String
 )
 
 @Serializable
-data class JoinQueueBody (
+data class JoinLeaveQueueBody (
     val attractionId: Int,
     val userId: Int
 )

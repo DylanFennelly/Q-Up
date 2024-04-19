@@ -139,7 +139,7 @@ fun MapBody(
             properties = MapProperties(mapStyleOptions = mapStyle)
         ) {
             for (attraction in attractions) {
-                val linkedQueue = queues.getOrNull(attraction.id)
+                val linkedQueue = queues.find{it.attractionId == attraction.id}
                 //https://www.boltuix.com/2022/11/custom-info-window-on-map-marker-clicks.html
                 val attractionLatLng = LatLng(attraction.lat, attraction.lng)
                 MarkerInfoWindow(

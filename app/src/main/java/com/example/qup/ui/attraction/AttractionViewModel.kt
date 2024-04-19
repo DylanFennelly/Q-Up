@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qup.data.FacilityRepository
-import com.example.qup.data.JoinQueueBody
+import com.example.qup.data.JoinLeaveQueueBody
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -35,7 +35,7 @@ class AttractionViewModel(
         viewModelScope.launch {
             joinQueueUiState = try {
                 Log.i("AttractionViewModel","Starting coroutine")
-                val joinResult = facilityRepository.joinQueue(body = JoinQueueBody(attractionId, userId))
+                val joinResult = facilityRepository.joinQueue(body = JoinLeaveQueueBody(attractionId, userId))
                 Log.i("AttractionViewModel", "API result: $joinResult")
                 JoinQueueUiState.Result(joinResult.statusCode)
             }catch (e: IOException) {

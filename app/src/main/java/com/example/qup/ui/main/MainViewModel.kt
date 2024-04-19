@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
+import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -25,6 +26,13 @@ sealed interface QueuesUiState {
     object Loading : QueuesUiState
 }
 
+sealed interface JoinQueueUiState {
+    data class Result(val statusCode: Int) : JoinQueueUiState
+    object Loading : JoinQueueUiState   //Join Queue API request underway
+    object Idle : JoinQueueUiState      //Request not underway
+    object Error : JoinQueueUiState      //Error in request
+}
+
 class MainViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository
@@ -34,6 +42,8 @@ class MainViewModel(
 
     var queuesUiState: QueuesUiState by mutableStateOf(QueuesUiState.Loading)
         private set
+
+    var joinQueueUiState: JoinQueueUiState by mutableStateOf(JoinQueueUiState.Idle)
 
     init{
         Log.i("ViewModel","MainViewModel Init")
@@ -76,6 +86,36 @@ class MainViewModel(
             }catch (e: IOException){
                 Log.e("ViewModel", "Error on API Call: $e")
                 QueuesUiState.Error
+            }
+        }
+    }
+
+    fun postJoinAttractionQueue(attractionId: Int, userId: Int){
+        Log.i("ViewModel","Starting Join Queue API request")
+        viewModelScope.launch {
+            joinQueueUiState = try {
+                Log.i("ViewModel","Starting coroutine")
+                val joinResult = facilityRepository.joinQueue(body = JoinLeaveQueueBody(attractionId, userId))
+                Log.i("ViewModel", "API result: $joinResult")
+                JoinQueueUiState.Result(joinResult.statusCode)
+            }catch (e: IOException) {
+                Log.e("ViewModel", "Error on API Call: $e")
+                JoinQueueUiState.Error
+            }
+        }
+    }
+
+    fun postLeaveAttractionQueue(attractionId: Int, userId: Int){
+        Log.i("ViewModel","Starting Join Queue API request")
+        viewModelScope.launch {
+            joinQueueUiState = try {
+                Log.i("ViewModel","Starting coroutine")
+                val leaveResult = facilityRepository.leaveQueue(body = JoinLeaveQueueBody(attractionId, userId))
+                Log.i("ViewModel", "API result: $leaveResult")
+                JoinQueueUiState.Result(leaveResult.statusCode)
+            }catch (e: IOException) {
+                Log.e("ViewModel", "Error on API Call: $e")
+                JoinQueueUiState.Error
             }
         }
     }
