@@ -75,8 +75,9 @@ object AttractionDestination: NavigationDestination {
 @Composable
 fun AttractionScreen(
     canNavigateBack: Boolean = true,
-    onNavigateUp: (String) -> Unit,
-    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+    navigateToMap: () -> Unit,
+    navigateToQueues: () -> Unit,
     mainViewModel: MainViewModel,
     attractionUiState: MainUiState,
     attractionViewModel: AttractionViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -90,10 +91,10 @@ fun AttractionScreen(
             QueueTopAppBar(
                 title = stringResource(id = R.string.attraction_detail_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp(mainViewModel.getFacilityName())}
+                navigateUp = {onNavigateUp()}
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) },
+        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) },
 
         //TODO: disable if user already in queue for attraction & replace with Leave Queue button
         floatingActionButton = {

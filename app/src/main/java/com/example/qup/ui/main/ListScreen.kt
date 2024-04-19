@@ -42,8 +42,6 @@ import com.example.qup.ui.theme.QueueTheme
 object ListDestination: NavigationDestination {
     override val route = "list"
     override val titleRes = R.string.attraction_list_button
-//    const val facility = "facility"             //determines which attraction data to load
-//    val routeWithArgs = "$route/{$facility}"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,8 +49,9 @@ object ListDestination: NavigationDestination {
 @Composable
 fun ListScreen(
     canNavigateBack: Boolean = true,
-    onNavigateUp: (String) -> Unit,
-    navigateToMap: (String) -> Unit,    //TODO: change to take no input (input String is not used)
+    onNavigateUp: () -> Unit,
+    navigateToMap: () -> Unit,
+    navigateToQueues: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
     facilityName: String,
@@ -65,10 +64,10 @@ fun ListScreen(
             QueueTopAppBar(
                 title = stringResource(R.string.attraction_list_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp(mainViewModel.getFacilityName())}
+                navigateUp = {onNavigateUp()}
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) }
+        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) }
     ) {innerPadding ->
 
         Box(modifier = Modifier.padding(innerPadding)) {

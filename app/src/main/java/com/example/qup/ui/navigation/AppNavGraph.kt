@@ -19,6 +19,8 @@ import com.example.qup.ui.main.ListScreen
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.MapDestination
 import com.example.qup.ui.main.MapScreen
+import com.example.qup.ui.main.QueuesDestination
+import com.example.qup.ui.main.QueuesScreen
 import com.google.android.gms.maps.model.LatLng
 
 //Defines navigation destinations for app views
@@ -62,6 +64,9 @@ fun AppNavGraph(
                 navigateToList = {
                     navController.navigate(ListDestination.route)
                 },
+                navigateToQueues = {
+                    navController.navigate(QueuesDestination.route)
+                },
                 mainViewModel = mainViewModel,
                 mainUiState = mainViewModel.mainUiState,
                 navigateToAttraction = {
@@ -82,12 +87,37 @@ fun AppNavGraph(
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
+                navigateToQueues = {
+                    navController.navigate(QueuesDestination.route)
+                },
                 navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
                 mainViewModel = mainViewModel,
                 listUiState = mainViewModel.mainUiState
             )
 
         }
+
+        composable(
+            route = QueuesDestination.route,
+        ) {
+            QueuesScreen(
+                onNavigateUp = {
+                    navController.navigate(MapDestination.route)
+                },
+                facilityName = mainViewModel.getFacilityName(),
+                navigateToMap = {
+                    navController.navigate(MapDestination.route)
+                },
+                navigateToList = {
+                    navController.navigate(ListDestination.route)
+                },
+                navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
+                mainViewModel = mainViewModel,
+                mainUiState = mainViewModel.mainUiState
+            )
+
+        }
+
         composable(
             route = AttractionDestination.routeWithArgs,
             arguments = listOf(navArgument(AttractionDestination.attractionID) {
@@ -100,6 +130,9 @@ fun AppNavGraph(
                 AttractionScreen(
                     onNavigateUp = { navController.navigate(ListDestination.route) },
                     navigateToMap = { navController.navigate(MapDestination.route) },
+                    navigateToQueues = {
+                        navController.navigate(QueuesDestination.route)
+                    },
                     mainViewModel = mainViewModel,
                     attractionUiState = mainViewModel.mainUiState,
                    // attractionIdString = attractionId

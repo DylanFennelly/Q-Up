@@ -74,11 +74,14 @@ fun QueueTopAppBar(
 fun QueueBottomAppBar(
     listSelected: Boolean,
     mapSelected: Boolean,
+    queuesSelected: Boolean,
     navigateToList: () -> Unit = {},
-    navigateToMap: () -> Unit = {}
+    navigateToMap: () -> Unit = {},
+    navigateToQueues: () -> Unit = {}
 ){
     val listBG: Color =  if (listSelected) colorResource(id = R.color.dark_baby_blue) else colorResource(R.color.baby_blue)
     val mapBG: Color = if (mapSelected) colorResource(id = R.color.dark_baby_blue) else colorResource(R.color.baby_blue)
+    val queuesBG: Color = if (queuesSelected) colorResource(id = R.color.dark_baby_blue) else colorResource(R.color.baby_blue)
 
     BottomAppBar(
         containerColor = colorResource(R.color.baby_blue),
@@ -116,6 +119,20 @@ fun QueueBottomAppBar(
                     modifier = Modifier.size(48.dp),
                     painter = painterResource(id = R.drawable.map_fill0_wght400_grad0_opsz24),
                     contentDescription = stringResource(id = R.string.map_button)
+                )
+            }
+
+            IconButton(modifier = Modifier
+                .weight(1F)
+                .background(queuesBG)
+                .fillMaxHeight(),
+                onClick = navigateToQueues,
+                enabled = !queuesSelected
+            ) {
+                Icon(
+                    modifier = Modifier.size(48.dp),
+                    painter = painterResource(id = R.drawable.schedule_24px),
+                    contentDescription = stringResource(id = R.string.queues_button)
                 )
             }
         }

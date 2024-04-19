@@ -66,7 +66,8 @@ fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     //navigateToMap: (String) -> Unit,
-    navigateToList: (String) -> Unit,
+    navigateToList: () -> Unit,
+    navigateToQueues: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
@@ -88,7 +89,7 @@ fun MapScreen(
                 navigateUp = onNavigateUp
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.getFacilityName())})}
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, queuesSelected = false, navigateToList= {navigateToList()}, navigateToQueues = {navigateToQueues()})}
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when(mainUiState) {
