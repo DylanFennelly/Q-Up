@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -93,45 +95,71 @@ fun AttractionScreen(
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, navigateToMap= { navigateToMap(mainViewModel.getFacilityName()) }) },
 
+        //TODO: disable if user already in queue for attraction & replace with Leave Queue button
         floatingActionButton = {
-
-            FloatingActionButton(
-                onClick = {
-                    attractionViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                    attractionViewModel.postJoinAttractionQueue(attractionId, 0) }, //TODO: hardcoded user ID
-                containerColor = colorResource(id = R.color.baby_blue),
-                contentColor = colorResource(id = R.color.white),
+            if (joinQueueUiState == JoinQueueUiState.Loading) {
+                FloatingActionButton(
+                    onClick = {},
+                    containerColor = colorResource(id = R.color.dark_baby_blue),
+                    contentColor = colorResource(id = R.color.disabled_text_grey),
                 ) {
 
-            Row() {
-                if (joinQueueUiState == JoinQueueUiState.Loading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(id = R.string.join_queue_button),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.join_queue_button),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                    )
+                    Row() {
+                        //while request in progress, display spinner icon
+                        CircularProgressIndicator(
+                            color = colorResource(id = R.color.disabled_text_grey),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(24.dp)
+                        )
+
+                        Text(
+                            text = stringResource(id = R.string.join_queue_button),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                        )
+
+                    }
                 }
-            }
+            }else{
+                FloatingActionButton(
+                    onClick = {
+                        attractionViewModel.joinQueueUiState = JoinQueueUiState.Loading
+                        attractionViewModel.postJoinAttractionQueue(attractionId, 0)
+                    }, //TODO: hardcoded user ID
+                    containerColor = colorResource(id = R.color.baby_blue),
+                    contentColor = colorResource(id = R.color.white),
+                ) {
+
+                    Row() {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(id = R.string.join_queue_button),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.join_queue_button),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                        )
+
+                    }
+                }
             }
 
         }
+
     ) {innerPadding ->
         when(attractionUiState){
             is MainUiState.Loading -> {
             }
             is MainUiState.Success -> {
+                //TODO: display if user is queued for attraction
+
                 Log.i("ViewModel", attractionUiState.attractions.toString())
                 AttractionDetails(
                     attraction = attractionUiState.attractions[attractionId],
@@ -141,9 +169,60 @@ fun AttractionScreen(
                         .verticalScroll(rememberScrollState())
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
                 )
+
+                when(joinQueueUiState){
+                    is JoinQueueUiState.Result ->{
+                        AlertDialog(
+                            onDismissRequest = { attractionViewModel.joinQueueUiState = JoinQueueUiState.Idle },
+                            title = {
+                                if (joinQueueUiState.statusCode == 200) {
+                                    Text(text = stringResource(id = R.string.join_queue_success_alert_title))
+                                }else{
+                                    Text(text = stringResource(id = R.string.error_alert_title))
+                                }
+                            },
+                            text = {
+                                when (joinQueueUiState.statusCode) {
+                                    //success
+                                    200 -> {
+                                        Text(
+                                            text = stringResource(id = R.string.join_queue_success_alert_desc) + " ${attractionUiState.attractions[attractionId].name}",
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                    //already in queue - shouldnt happen, button to join queue isnt pressable if in queue
+                                    409 -> {
+                                        Text(
+                                            text = stringResource(id = R.string.join_queue_error_409_alert_desc),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                    else -> {
+                                        Text(
+                                            text = stringResource(id = R.string.error_500_alert_desc),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    attractionViewModel.joinQueueUiState = JoinQueueUiState.Idle
+                                }
+                                ) {
+                                    Text(stringResource(id = R.string.alert_okay))
+                                }
+                            },
+
+                            )
+                    }
+                    else -> {}
+                }
+
             }
             is MainUiState.Error -> {}
         }
+
     }
 }
 
@@ -316,7 +395,9 @@ fun AttractionDetails(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 64.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 64.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.attraction_description_label),
