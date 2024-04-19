@@ -76,7 +76,7 @@ fun ListScreen(
                 is MainUiState.Success -> {
                     ListBody(
                         attractions = listUiState.attractions,
-                        onItemClick = navigateToAttraction,    //TODO Add click function
+                        onItemClick = navigateToAttraction,
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()

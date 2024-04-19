@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
+import com.example.qup.data.QueueEntry
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -18,11 +19,20 @@ sealed interface MainUiState {
     object Loading : MainUiState
 }
 
+sealed interface QueuesUiState {
+    data class Success(val userQueues: List<QueueEntry>) : QueuesUiState
+    object Error : QueuesUiState
+    object Loading : QueuesUiState
+}
+
 class MainViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository
 ): ViewModel() {
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
+        private set
+
+    var queuesUiState: QueuesUiState by mutableStateOf(QueuesUiState.Loading)
         private set
 
     init{
@@ -51,6 +61,21 @@ class MainViewModel(
             }catch (e: IOException){
                 Log.e("ViewModel", "Error on API Call: $e")
                 MainUiState.Error
+            }
+        }
+    }
+
+    fun getUserQueues(userId: Int){
+        Log.i("ViewModel","Starting getUserQueues API request")
+        viewModelScope.launch {
+            queuesUiState = try {
+                Log.i("ViewModel", "Starting getUserQueues coroutine")
+                val queuesResult = facilityRepository.getUserQueues(userId)
+                Log.i("ViewModel", "API result: ${queuesResult}")
+                QueuesUiState.Success(queuesResult)
+            }catch (e: IOException){
+                Log.e("ViewModel", "Error on API Call: $e")
+                QueuesUiState.Error
             }
         }
     }

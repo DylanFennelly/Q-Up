@@ -42,6 +42,7 @@ fun AppNavGraph(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
                     mainViewModel.getFacilityAttractions()
+                    mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 }
             )
@@ -113,7 +114,8 @@ fun AppNavGraph(
                 },
                 navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
                 mainViewModel = mainViewModel,
-                mainUiState = mainViewModel.mainUiState
+                mainUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState
             )
 
         }
