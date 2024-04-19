@@ -35,4 +35,5 @@
     <string name="error_500_alert_desc">Something went wrong. Check your internet connection and try again.</string>
     <string name="alert_okay">Okay</string>
     <string name="expand_collapse_label">Expand/Collapse</string>
+    <string name="attraction_in_queue_label">You are queued for this attraction</string>
 </resources>

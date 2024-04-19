@@ -70,6 +70,7 @@ fun AppNavGraph(
                 },
                 mainViewModel = mainViewModel,
                 mainUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState,
                 navigateToAttraction = {
                     navController.navigate("${AttractionDestination.route}/${it}")
                 }
@@ -93,7 +94,8 @@ fun AppNavGraph(
                 },
                 navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
                 mainViewModel = mainViewModel,
-                listUiState = mainViewModel.mainUiState
+                listUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState
             )
 
         }
@@ -137,6 +139,7 @@ fun AppNavGraph(
                     },
                     mainViewModel = mainViewModel,
                     attractionUiState = mainViewModel.mainUiState,
+                    queuesUiState = mainViewModel.queuesUiState,
                    // attractionIdString = attractionId
                 )
            //}
