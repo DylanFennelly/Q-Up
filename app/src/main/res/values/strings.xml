@@ -32,6 +32,7 @@
     <string name="leave_queue_confirmation_alert_desc_1">Are you sure you want to leave the queue for </string>
     <string name="leave_queue_confirmation_alert_desc_2">You will lose your queue position. </string>
     <string name="leave_queue_success_alert_title">Left Queue</string>
+    <string name="no_queues_joined_desc">You are not queued for any attractions. Head over to the attraction list and join a queue.</string>
     <!--append attraction name to end-->
     <string name="join_queue_success_alert_desc">You have queued-up for </string>
     <string name="leave_queue_success_alert_desc">You have left the queue for </string>

@@ -58,7 +58,7 @@ import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 
-object QueuesDestination: NavigationDestination {
+object QueuesDestination : NavigationDestination {
     override val route = "queues"
     override val titleRes = R.string.queues_button
 }
@@ -76,35 +76,38 @@ fun QueuesScreen(
     facilityName: String,
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState
-){
+) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
-    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        refreshThreshold = 120.dp,
+        onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
 
     //https://medium.com/@rzmeneghelo/state-hoisting-in-jetpack-compose-keeping-your-apps-state-under-control-958a540a6824
     //state hoisting, i hate android with a burning passion
-    fun toggleLeaveConfirmation(){
+    fun toggleLeaveConfirmation() {
         leaveConfirmation = !leaveConfirmation
     }
 
-    var hasLeft by rememberSaveable { mutableStateOf(false)}
+    var hasLeft by rememberSaveable { mutableStateOf(false) }
 
-    fun toggleHasLeftConfirmation(){
+    fun toggleHasLeftConfirmation() {
         hasLeft = !hasLeft
     }
 
     //I must reiterate how much I hate andorid
-    var attractionName by rememberSaveable { mutableStateOf("")}
+    var attractionName by rememberSaveable { mutableStateOf("") }
 
-    fun setAttractionName(name:String){
+    fun setAttractionName(name: String) {
         attractionName = name
     }
 
     var attractionId by rememberSaveable { mutableIntStateOf(0) }
 
-    fun setAttractionId(id: Int){
+    fun setAttractionId(id: Int) {
         attractionId = id
     }
 
@@ -113,50 +116,93 @@ fun QueuesScreen(
             QueueTopAppBar(
                 title = stringResource(R.string.queues_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp()}
+                navigateUp = { onNavigateUp() }
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = false, queuesSelected = true, navigateToMap= { navigateToMap() }, navigateToList = {navigateToList()}) }
+        bottomBar = {
+            QueueBottomAppBar(
+                listSelected = false,
+                mapSelected = false,
+                queuesSelected = true,
+                navigateToMap = { navigateToMap() },
+                navigateToList = { navigateToList() })
+        }
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .pullRefresh(pullRefreshState)
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .pullRefresh(pullRefreshState)
         ) {
             when (mainUiState) {
                 is MainUiState.Loading -> {
-                    ListLoading()}
+                    ListLoading()
+                }
+
                 is MainUiState.Success -> {
                     when (queuesUiState) {
                         is QueuesUiState.Loading -> {
-                            ListLoading()}
-                        is QueuesUiState.Success -> {
-                            QueuesListBody(
-                                queues = queuesUiState.userQueues,
-                                attractions = mainUiState.attractions,
-                                toggleLeaveConfirmation = ::toggleLeaveConfirmation,
-                                toggleHasLeftConfirmation = ::toggleHasLeftConfirmation,
-                                navigateToAttraction = navigateToAttraction,
-                                setAttractionName = ::setAttractionName,
-                                setAttractionId = ::setAttractionId,
-                                modifier = Modifier
-                                    .padding(innerPadding)
-                                    .fillMaxSize()
-                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            )
+                            ListLoading()
                         }
+
+                        is QueuesUiState.Success -> {
+                            if (queuesUiState.userQueues.isNotEmpty()) {
+                                QueuesListBody(
+                                    queues = queuesUiState.userQueues,
+                                    attractions = mainUiState.attractions,
+                                    toggleLeaveConfirmation = ::toggleLeaveConfirmation,
+                                    toggleHasLeftConfirmation = ::toggleHasLeftConfirmation,
+                                    navigateToAttraction = navigateToAttraction,
+                                    setAttractionName = ::setAttractionName,
+                                    setAttractionId = ::setAttractionId,
+                                    modifier = Modifier
+                                        .padding(innerPadding)
+                                        .fillMaxSize()
+                                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                )
+                            }else{
+                                Column(modifier = Modifier
+                                    .padding(innerPadding)
+                                     ) {
+                                    Text(
+                                        text = stringResource(id = R.string.no_queues_joined_desc),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        textAlign = TextAlign.Center,
+                                        color = colorResource(id = R.color.disabled_text_dark_grey),
+                                        modifier = Modifier.padding(
+                                            top = 40.dp,
+                                            start = 30.dp,
+                                            end = 30.dp,
+                                            bottom = 20.dp
+                                        )
+                                    )
+                                    Row( Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                        Button(
+                                            onClick = { navigateToList() },
+                                            colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue))
+                                        ) {
+                                            Text(text = stringResource(id = R.string.attraction_list_button))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         is QueuesUiState.Error -> {
-                            ListError()}
+                            ListError()
+                        }
                     }
                 }
+
                 is MainUiState.Error -> {
-                    ListError()}
+                    ListError()
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
+                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)
             }
         }
 
-        if (leaveConfirmation){
+        if (leaveConfirmation) {
             LeaveQueueConfirmAlert(
                 toggleLeaveConfirmation = ::toggleLeaveConfirmation,
                 attractionName = attractionName,
@@ -166,7 +212,7 @@ fun QueuesScreen(
             )
         }
 
-        if (hasLeft){
+        if (hasLeft) {
             HasLeftAlert(
                 mainViewModel = mainViewModel,
                 attractionName = attractionName,
@@ -191,15 +237,19 @@ fun QueuesListBody(
     toggleHasLeftConfirmation: () -> Unit,
     setAttractionName: (String) -> Unit,
     setAttractionId: (Int) -> Unit
-){
+) {
+    LazyColumn {
 
-    LazyColumn{
-        items(queues){ queue ->
-            val linkedAttraction = attractions.find{it.id == queue.attractionId}
+        items(queues) { queue ->
+            val linkedAttraction = attractions.find { it.id == queue.attractionId }
 
             //if user somehow in queue for non-existent attractionId, skip it
             if (linkedAttraction != null) {
-                val queueTime = calculateEstimatedQueueTime(queue.aheadInQueue, linkedAttraction.avg_capacity, linkedAttraction.length)
+                val queueTime = calculateEstimatedQueueTime(
+                    queue.aheadInQueue,
+                    linkedAttraction.avg_capacity,
+                    linkedAttraction.length
+                )
 
                 QueueItemExpandable(
                     title = linkedAttraction.name,
@@ -213,8 +263,12 @@ fun QueuesListBody(
                                 setAttractionName(linkedAttraction.name)
                                 setAttractionId(queue.attractionId)
                                 toggleLeaveConfirmation()
-                                      },
-                            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.closed_red)),
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(
+                                    id = R.color.closed_red
+                                )
+                            ),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
@@ -225,9 +279,13 @@ fun QueuesListBody(
                         Spacer(modifier = Modifier.weight(0.3f))
                         Button(
                             onClick = { navigateToAttraction(linkedAttraction.id) },
-                            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.baby_blue)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(
+                                    id = R.color.baby_blue
+                                )
+                            ),
                             modifier = Modifier.weight(1f)
-                            ) {
+                        ) {
                             Text(
                                 text = stringResource(id = R.string.attraction_detail_button),
                                 textAlign = TextAlign.Center
@@ -236,10 +294,10 @@ fun QueuesListBody(
                         Spacer(modifier = Modifier.weight(0.3f))
                     }
                 }
-                }
             }
         }
     }
+}
 
 @Composable
 fun LeaveQueueConfirmAlert(
@@ -248,14 +306,17 @@ fun LeaveQueueConfirmAlert(
     mainViewModel: MainViewModel,
     attractionId: Int,
     toggleHasLeftConfirmation: () -> Unit,
-){
+) {
     AlertDialog(
         onDismissRequest = { toggleLeaveConfirmation() },
         title = { Text(text = stringResource(id = R.string.leave_queue_confirmation_alert_title)) },
         text = {
             Text(
-                text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attractionName}? \n\n" + stringResource(id = R.string.leave_queue_confirmation_alert_desc_2),
-                textAlign = TextAlign.Center)
+                text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attractionName}? \n\n" + stringResource(
+                    id = R.string.leave_queue_confirmation_alert_desc_2
+                ),
+                textAlign = TextAlign.Center
+            )
         },
         dismissButton = {
             TextButton(onClick = { toggleLeaveConfirmation() }) {
@@ -282,14 +343,14 @@ fun HasLeftAlert(
     attractionName: String,
     toggleHasLeftConfirmation: () -> Unit,
 
-){
+    ) {
     AlertDialog(
         onDismissRequest = {
             mainViewModel.refreshData(0)
             mainViewModel.joinQueueUiState =
                 JoinQueueUiState.Idle
             toggleHasLeftConfirmation()
-                           },
+        },
         title = { Text(text = stringResource(id = R.string.leave_queue_success_alert_title)) },
         text = {
             Text(
@@ -312,7 +373,6 @@ fun HasLeftAlert(
 }
 
 
-
 //Expandable item - https://proandroiddev.com/creating-expandable-sections-with-compose-c0e827fb6910
 @Composable
 fun QueueItemTitle(
@@ -320,7 +380,7 @@ fun QueueItemTitle(
     isExpanded: Boolean,
     title: String,
     queueTime: Int
-){
+) {
     val icon = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown
 
     Column {
@@ -366,7 +426,7 @@ fun QueueItemExpandable(
     queueTime: Int,
     title: String,
     content: @Composable () -> Unit
-){
+) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier = Modifier
