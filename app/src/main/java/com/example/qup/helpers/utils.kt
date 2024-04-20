@@ -1,6 +1,8 @@
 package com.example.qup.helpers
 
 import android.content.Context
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.qup.R
 import com.google.android.gms.maps.model.MapStyleOptions
 import java.io.InputStream
@@ -32,5 +34,18 @@ fun loadMapStyle(context: Context): MapStyleOptions? {
     } catch (e: Exception) {
         e.printStackTrace()
         null
+    }
+}
+
+fun sendNotification(context: Context) {
+    val builder = NotificationCompat.Builder(context, "CHANNEL_ID")
+        .setSmallIcon(R.drawable.schedule_24px)
+        .setContentTitle("Example Notification")
+        .setContentText("This is a test notification from our Compose app.")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+    with(NotificationManagerCompat.from(context)) {
+        // notificationId is a unique int for each notification that you must define
+        notify(1234, builder.build())
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.helpers.sendNotification
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
@@ -59,6 +61,8 @@ fun HomeScreen(
 fun HomeBody(
     onButtonClick: (String) -> Unit
 ){
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -75,7 +79,10 @@ fun HomeBody(
             modifier = Modifier.padding(bottom = 64.dp)
         )
         Button(
-            onClick = { onButtonClick("SETU") },        //TODO: Change to use actual data, not raw string
+            onClick = {
+                sendNotification(context)
+                onButtonClick("SETU")
+                      },        //TODO: Change to use actual data, not raw string
             colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue))
         ) {
             Text(text = "Enter Facility")
