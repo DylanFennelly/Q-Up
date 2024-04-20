@@ -1,5 +1,6 @@
 package com.example.qup.ui.main
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +12,8 @@ import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
+import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.helpers.sendNotification
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,8 +41,10 @@ sealed interface JoinQueueUiState {
 
 class MainViewModel(
     private val savedStateHandle: SavedStateHandle,
-    private val facilityRepository: FacilityRepository
+    private val facilityRepository: FacilityRepository,
+    private val appContext: Context
 ): ViewModel() {
+
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
         private set
 
@@ -59,7 +64,6 @@ class MainViewModel(
 
     init{
         Log.i("ViewModel","MainViewModel Init")
-        //getFacilityAttractions()
     }
 
     fun getFacilityName(): String{
@@ -74,6 +78,43 @@ class MainViewModel(
     fun refreshData(userId: Int){
         getFacilityAttractions()
         getUserQueues(userId)
+        checkQueueTimes()
+    }
+
+    //Check user queues for each attraction and send notifications for ones close to queue
+    fun checkQueueTimes(){
+        when(mainUiState){
+            is MainUiState.Success -> {
+                when(queuesUiState){
+                    is QueuesUiState.Success -> {
+                        for (queue in (queuesUiState as QueuesUiState.Success).userQueues){
+                            val linkedAttraction = (mainUiState as MainUiState.Success).attractions.find { it.id == queue.attractionId }
+
+                            //if user somehow in queue for non-existent attractionId, skip it
+                            if (linkedAttraction != null){
+                                val queueTime = calculateEstimatedQueueTime(
+                                    queue.aheadInQueue,
+                                    linkedAttraction.avg_capacity,
+                                    linkedAttraction.length
+                                )
+
+                                //if less then 5 minutes left in queue
+                                //TODO: check user location and take into account when to send notification
+                                //TODO: track what queues have had notifications sent for them
+                                if (queueTime < 5){
+                                    sendNotification(appContext,
+                                        "Time to get going!",
+                                        "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now.",
+                                        queue.attractionId)
+                                }
+                            }
+                        }
+                    }
+                    else -> {}
+                }
+            }
+            else -> {}
+        }
     }
 
 

@@ -19,7 +19,8 @@ object AppViewModelProvider{
         initializer {
             MainViewModel(
                 this.createSavedStateHandle(),
-                queueApplicationContainer().container.facilityRepository
+                queueApplicationContainer().container.facilityRepository,
+                queueApplicationContainer().applicationContext  //passing context for notifications
             )
         }
         initializer {

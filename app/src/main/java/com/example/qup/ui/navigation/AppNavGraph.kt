@@ -46,8 +46,9 @@ fun AppNavGraph(
             HomeScreen(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
-                    mainViewModel.getFacilityAttractions()
-                    mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
+                    mainViewModel.refreshData(0)
+                    //mainViewModel.getFacilityAttractions()
+                   // mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
                 navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
@@ -58,8 +59,9 @@ fun AppNavGraph(
             PermissionsScreen(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
-                    mainViewModel.getFacilityAttractions()
-                    mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
+                    mainViewModel.refreshData(0)
+                    //mainViewModel.getFacilityAttractions()
+                    //mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
                 onNavigateUp = { navController.popBackStack() })

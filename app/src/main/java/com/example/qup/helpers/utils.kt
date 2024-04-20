@@ -1,8 +1,12 @@
 package com.example.qup.helpers
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.icu.text.CaseMap.Title
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.qup.MainActivity
 import com.example.qup.R
 import com.google.android.gms.maps.model.MapStyleOptions
 import java.io.InputStream
@@ -37,15 +41,28 @@ fun loadMapStyle(context: Context): MapStyleOptions? {
     }
 }
 
-fun sendNotification(context: Context) {
+fun sendNotification(context: Context, title: String, content: String, notificationId: Int) {
+    //bring app to foreground when notification pressed - https://developer.android.com/develop/ui/views/notifications/build-notification#kotlin
+    //return app with current state to foreground - Generative AI Usage 5.
+    val intent = Intent(context, MainActivity::class.java).apply {
+        action = Intent.ACTION_MAIN
+        addCategory(Intent.CATEGORY_LAUNCHER)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+
     val builder = NotificationCompat.Builder(context, "CHANNEL_ID")
-        .setSmallIcon(R.drawable.schedule_24px)
-        .setContentTitle("Example Notification")
-        .setContentText("This is a test notification from our Compose app.")
+        .setSmallIcon(R.drawable.logo)
+        .setContentTitle(title)
+        .setContentText(content)
+        .setStyle(NotificationCompat.BigTextStyle()
+            .bigText(content))
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)                //removes notification when pressed
 
     with(NotificationManagerCompat.from(context)) {
-        // notificationId is a unique int for each notification that you must define
-        notify(1234, builder.build())
+        notify(notificationId, builder.build())     //permission to send notifications always granted by this point
     }
 }
