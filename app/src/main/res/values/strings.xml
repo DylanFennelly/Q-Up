@@ -28,12 +28,19 @@
     <string name="attraction_location_label">Location</string>
     <string name="attraction_description_label">Description</string>
     <string name="join_queue_success_alert_title">You\'re in!</string>
+    <string name="leave_queue_confirmation_alert_title">Leave Queue?</string>
+    <string name="leave_queue_confirmation_alert_desc_1">Are you sure you want to leave the queue for </string>
+    <string name="leave_queue_confirmation_alert_desc_2">You will lose your queue position. </string>
+    <string name="leave_queue_success_alert_title">Left Queue</string>
     <!--append attraction name to end-->
     <string name="join_queue_success_alert_desc">You have queued-up for </string>
+    <string name="leave_queue_success_alert_desc">You have left the queue for </string>
     <string name="error_alert_title">Error</string>
     <string name="join_queue_error_409_alert_desc">You are already queued for this attraction.</string>
     <string name="error_500_alert_desc">Something went wrong. Check your internet connection and try again.</string>
     <string name="alert_okay">Okay</string>
+    <string name="alert_confirm">Confirm</string>
+    <string name="alert_cancel">Cancel</string>
     <string name="expand_collapse_label">Expand/Collapse</string>
     <string name="attraction_in_queue_label">You are queued for this attraction</string>
 </resources>

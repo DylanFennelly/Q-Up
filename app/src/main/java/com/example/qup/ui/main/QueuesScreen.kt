@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,10 +33,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -78,6 +81,33 @@ fun QueuesScreen(
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
+    var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
+
+    //https://medium.com/@rzmeneghelo/state-hoisting-in-jetpack-compose-keeping-your-apps-state-under-control-958a540a6824
+    //state hoisting, i hate android with a burning passion
+    fun toggleLeaveConfirmation(){
+        leaveConfirmation = !leaveConfirmation
+    }
+
+    var hasLeft by rememberSaveable { mutableStateOf(false)}
+
+    fun toggleHasLeftConfirmation(){
+        hasLeft = !hasLeft
+    }
+
+    //I must reiterate how much I hate andorid
+    var attractionName by rememberSaveable { mutableStateOf("")}
+
+    fun setAttractionName(name:String){
+        attractionName = name
+    }
+
+    var attractionId by rememberSaveable { mutableIntStateOf(0) }
+
+    fun setAttractionId(id: Int){
+        attractionId = id
+    }
+
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -103,7 +133,11 @@ fun QueuesScreen(
                             QueuesListBody(
                                 queues = queuesUiState.userQueues,
                                 attractions = mainUiState.attractions,
+                                toggleLeaveConfirmation = ::toggleLeaveConfirmation,
+                                toggleHasLeftConfirmation = ::toggleHasLeftConfirmation,
                                 navigateToAttraction = navigateToAttraction,
+                                setAttractionName = ::setAttractionName,
+                                setAttractionId = ::setAttractionId,
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize()
@@ -121,6 +155,28 @@ fun QueuesScreen(
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
             }
         }
+
+        if (leaveConfirmation){
+            LeaveQueueConfirmAlert(
+                toggleLeaveConfirmation = ::toggleLeaveConfirmation,
+                attractionName = attractionName,
+                mainViewModel = mainViewModel,
+                attractionId = attractionId,
+                toggleHasLeftConfirmation = ::toggleHasLeftConfirmation
+            )
+        }
+
+        if (hasLeft){
+            HasLeftAlert(
+                mainViewModel = mainViewModel,
+                attractionName = attractionName,
+                toggleHasLeftConfirmation = ::toggleHasLeftConfirmation
+            )
+
+
+        }
+
+
     }
 
 }
@@ -130,8 +186,13 @@ fun QueuesListBody(
     queues: List<QueueEntry>,
     attractions: List<Attraction>,
     modifier: Modifier = Modifier,
-    navigateToAttraction: (Int) -> Unit
+    navigateToAttraction: (Int) -> Unit,
+    toggleLeaveConfirmation: () -> Unit,
+    toggleHasLeftConfirmation: () -> Unit,
+    setAttractionName: (String) -> Unit,
+    setAttractionId: (Int) -> Unit
 ){
+
     LazyColumn{
         items(queues){ queue ->
             val linkedAttraction = attractions.find{it.id == queue.attractionId}
@@ -148,7 +209,11 @@ fun QueuesListBody(
                     Row {
                         Spacer(modifier = Modifier.weight(0.3f))
                         Button(
-                            onClick = { /*TODO*/ },
+                            onClick = {
+                                setAttractionName(linkedAttraction.name)
+                                setAttractionId(queue.attractionId)
+                                toggleLeaveConfirmation()
+                                      },
                             colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.closed_red)),
                             modifier = Modifier.weight(1f)
                         ) {
@@ -171,10 +236,82 @@ fun QueuesListBody(
                         Spacer(modifier = Modifier.weight(0.3f))
                     }
                 }
+                }
             }
         }
     }
+
+@Composable
+fun LeaveQueueConfirmAlert(
+    toggleLeaveConfirmation: () -> Unit,
+    attractionName: String,
+    mainViewModel: MainViewModel,
+    attractionId: Int,
+    toggleHasLeftConfirmation: () -> Unit,
+){
+    AlertDialog(
+        onDismissRequest = { toggleLeaveConfirmation() },
+        title = { Text(text = stringResource(id = R.string.leave_queue_confirmation_alert_title)) },
+        text = {
+            Text(
+                text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attractionName}? \n\n" + stringResource(id = R.string.leave_queue_confirmation_alert_desc_2),
+                textAlign = TextAlign.Center)
+        },
+        dismissButton = {
+            TextButton(onClick = { toggleLeaveConfirmation() }) {
+                Text(text = stringResource(R.string.alert_cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                toggleLeaveConfirmation()
+                mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
+                mainViewModel.postLeaveAttractionQueue(attractionId, 0) //TODO: hardcoded user ID
+                toggleHasLeftConfirmation()
+            }
+            ) {
+                Text(stringResource(id = R.string.alert_confirm))
+            }
+        },
+    )
 }
+
+@Composable
+fun HasLeftAlert(
+    mainViewModel: MainViewModel,
+    attractionName: String,
+    toggleHasLeftConfirmation: () -> Unit,
+
+){
+    AlertDialog(
+        onDismissRequest = {
+            mainViewModel.refreshData(0)
+            mainViewModel.joinQueueUiState =
+                JoinQueueUiState.Idle
+            toggleHasLeftConfirmation()
+                           },
+        title = { Text(text = stringResource(id = R.string.leave_queue_success_alert_title)) },
+        text = {
+            Text(
+                text = stringResource(id = R.string.leave_queue_success_alert_desc) + " ${attractionName}.",
+                textAlign = TextAlign.Center
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                mainViewModel.refreshData(0)
+                mainViewModel.joinQueueUiState =
+                    JoinQueueUiState.Idle
+                toggleHasLeftConfirmation()
+            }
+            ) {
+                Text(stringResource(id = R.string.alert_okay))
+            }
+        }
+    )
+}
+
+
 
 //Expandable item - https://proandroiddev.com/creating-expandable-sections-with-compose-c0e827fb6910
 @Composable
@@ -205,7 +342,7 @@ fun QueueItemTitle(
             )
         }
         Row(
-            modifier = Modifier.padding(8.dp),
+            modifier = modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

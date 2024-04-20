@@ -38,6 +38,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,7 +80,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-object AttractionDestination: NavigationDestination {
+object AttractionDestination : NavigationDestination {
     override val route = "attraction"
     override val titleRes = R.string.attraction_detail_button
     const val attractionID = "id"             //determines which attraction data to load
@@ -95,14 +99,19 @@ fun AttractionScreen(
     attractionUiState: MainUiState,
     queuesUiState: QueuesUiState,
     attractionViewModel: AttractionViewModel = viewModel(factory = AppViewModelProvider.Factory)
-){
+) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val attractionId = attractionViewModel.attractionId
     val joinQueueUiState = mainViewModel.joinQueueUiState
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
-    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 120.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        refreshThreshold = 120.dp,
+        onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
+    var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
 
-    when(attractionUiState){
+    when (attractionUiState) {
         //TODO: add Loading and Error states
         is MainUiState.Loading -> {}
         is MainUiState.Error -> {}
@@ -115,22 +124,30 @@ fun AttractionScreen(
                 is QueuesUiState.Error -> {}
                 is QueuesUiState.Success -> {
 
-                    val linkedQueue = queuesUiState.userQueues.find{it.attractionId == attraction.id}
+                    val linkedQueue =
+                        queuesUiState.userQueues.find { it.attractionId == attraction.id }
 
                     Scaffold(
                         topBar = {
                             QueueTopAppBar(
                                 title = stringResource(id = R.string.attraction_detail_button),
                                 canNavigateBack = canNavigateBack,
-                                navigateUp = {onNavigateUp()}
+                                navigateUp = { onNavigateUp() }
                             )
                         },
-                        bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) },
+                        bottomBar = {
+                            QueueBottomAppBar(
+                                listSelected = true,
+                                mapSelected = false,
+                                queuesSelected = false,
+                                navigateToMap = { navigateToMap() },
+                                navigateToQueues = { navigateToQueues() })
+                        },
 
                         //TODO: disable if user already in queue for attraction & replace with Leave Queue button
                         floatingActionButton = {
-                            //if processing queue Join
-                            if (joinQueueUiState == JoinQueueUiState.Loading) {
+                            //if processing queue Join & user is not in a queue
+                            if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue == null) {
                                 FloatingActionButton(
                                     onClick = {},
                                     containerColor = colorResource(id = R.color.dark_baby_blue),
@@ -157,10 +174,10 @@ fun AttractionScreen(
                                     }
                                 }
                             }
-                            //else if user is in queue for attraction (display leave queue instead
-                            else if (linkedQueue != null){
+                            //else if user is in queue for attraction (display leave queue instead)
+                            else if (joinQueueUiState != JoinQueueUiState.Loading && linkedQueue != null) {
                                 FloatingActionButton(
-                                    onClick = {}, //TODO: hardcoded user ID
+                                    onClick = { leaveConfirmation = true },
                                     containerColor = colorResource(id = R.color.closed_red),
                                     contentColor = colorResource(id = R.color.white),
                                 ) {
@@ -182,13 +199,41 @@ fun AttractionScreen(
                                 }
                             }
                             //else if leave queue is in progress
+                            else if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue != null) {
+                                FloatingActionButton(
+                                    onClick = {},
+                                    containerColor = colorResource(id = R.color.disabled_red),
+                                    contentColor = colorResource(id = R.color.disabled_text_grey),
+                                ) {
+
+                                    Row() {
+                                        //while request in progress, display spinner icon
+                                        CircularProgressIndicator(
+                                            color = colorResource(id = R.color.disabled_text_grey),
+                                            modifier = Modifier
+                                                .padding(start = 8.dp)
+                                                .size(24.dp)
+                                        )
+
+                                        Text(
+                                            text = stringResource(id = R.string.leave_queue_button),
+                                            textAlign = TextAlign.Center,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                                        )
+
+                                    }
+                                }
+                            }
 
                             //else user is not in queue and join/leave is not in progress
-                            else{
+                            else {
                                 FloatingActionButton(
                                     onClick = {
                                         mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
                                         mainViewModel.postJoinAttractionQueue(attraction.id, 0)
+                                        lastRequest = "Join"
                                     }, //TODO: hardcoded user ID
                                     containerColor = colorResource(id = R.color.baby_blue),
                                     contentColor = colorResource(id = R.color.white),
@@ -214,7 +259,7 @@ fun AttractionScreen(
 
                         }
 
-                    ) {innerPadding ->
+                    ) { innerPadding ->
                         Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                             AttractionDetails(
                                 attraction = attraction,
@@ -225,68 +270,116 @@ fun AttractionScreen(
                                     .verticalScroll(rememberScrollState())
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
-                            }
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
-                            }
                         }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            PullRefreshIndicator(
+                                refreshing = isRefreshing,
+                                state = pullRefreshState
+                            )
+                        }
+                    }
 
-                        //alert for joining queue
-                        when (joinQueueUiState) {
-                            is JoinQueueUiState.Result -> {
-                                AlertDialog(
-                                    onDismissRequest = {
-                                        mainViewModel.joinQueueUiState = JoinQueueUiState.Idle
-                                    },
-                                    title = {
-                                        if (joinQueueUiState.statusCode == 200) {
+                    //alert for confirming queue leave
+                    if(leaveConfirmation){
+                        AlertDialog(
+                            onDismissRequest = { leaveConfirmation = false },
+                            title = { Text(text = stringResource(id = R.string.leave_queue_confirmation_alert_title)) },
+                            text = {
+                                Text(
+                                    text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attraction.name}? \n\n" + stringResource(id = R.string.leave_queue_confirmation_alert_desc_2),
+                                    textAlign = TextAlign.Center)
+                                   },
+                            dismissButton = {
+                                TextButton(onClick = { leaveConfirmation = false }) {
+                                    Text(text = stringResource(R.string.alert_cancel))
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    leaveConfirmation = false
+                                    mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
+                                    mainViewModel.postLeaveAttractionQueue(attraction.id, 0) //TODO: hardcoded user ID
+                                    lastRequest = "Leave"
+                                }
+                                ) {
+                                    Text(stringResource(id = R.string.alert_confirm))
+                                }
+                            },
+                        )
+                    }
+
+                    //alert for joining queue
+                    when (joinQueueUiState) {
+                        is JoinQueueUiState.Result -> {
+                            AlertDialog(
+                                onDismissRequest = {
+                                    mainViewModel.refreshData(0)
+                                    mainViewModel.joinQueueUiState = JoinQueueUiState.Idle
+                                },
+                                title = {
+                                    if (joinQueueUiState.statusCode == 200) {
+                                        Log.d("AttractionScreen", "lastRequest: $lastRequest")
+                                        if (lastRequest == "Join") {
                                             Text(text = stringResource(id = R.string.join_queue_success_alert_title))
                                         } else {
-                                            Text(text = stringResource(id = R.string.error_alert_title))
+                                            Text(text = stringResource(id = R.string.leave_queue_success_alert_title))
                                         }
-                                    },
-                                    text = {
-                                        when (joinQueueUiState.statusCode) {
-                                            //success
-                                            200 -> {
+                                    } else {
+                                        Text(text = stringResource(id = R.string.error_alert_title))
+                                    }
+                                },
+                                text = {
+                                    when (joinQueueUiState.statusCode) {
+                                        //success
+                                        200 -> {
+                                            if (lastRequest == "Join") {
                                                 Text(
-                                                    text = stringResource(id = R.string.join_queue_success_alert_desc) + " ${attraction.name}",
+                                                    text = stringResource(id = R.string.join_queue_success_alert_desc) + " ${attraction.name}.",
                                                     textAlign = TextAlign.Center
                                                 )
-                                            }
-                                            //already in queue - shouldnt happen, button to join queue isnt pressable if in queue
-                                            409 -> {
+                                            } else {
                                                 Text(
-                                                    text = stringResource(id = R.string.join_queue_error_409_alert_desc),
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
-
-                                            else -> {
-                                                Text(
-                                                    text = stringResource(id = R.string.error_500_alert_desc),
+                                                    text = stringResource(id = R.string.leave_queue_success_alert_desc) + " ${attraction.name}.",
                                                     textAlign = TextAlign.Center
                                                 )
                                             }
                                         }
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = {
-                                            mainViewModel.joinQueueUiState =
-                                                JoinQueueUiState.Idle
+                                        //already in queue - shouldnt happen, button to join queue isnt pressable if in queue
+                                        409 -> {
+                                            Text(
+                                                text = stringResource(id = R.string.join_queue_error_409_alert_desc),
+                                                textAlign = TextAlign.Center
+                                            )
                                         }
-                                        ) {
-                                            Text(stringResource(id = R.string.alert_okay))
+
+                                        else -> {
+                                            Text(
+                                                text = stringResource(id = R.string.error_500_alert_desc),
+                                                textAlign = TextAlign.Center
+                                            )
                                         }
-                                    },
-
-                                    )
-                            }
-
-                            else -> {}
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        mainViewModel.refreshData(0)
+                                        mainViewModel.joinQueueUiState =
+                                            JoinQueueUiState.Idle
+                                    }
+                                    ) {
+                                        Text(stringResource(id = R.string.alert_okay))
+                                    }
+                                },
+                                )
                         }
 
+                        else -> {}
                     }
+
+                }
 
             }
 
@@ -301,13 +394,13 @@ fun AttractionDetails(
     attraction: Attraction,
     linkedQueue: QueueEntry?,
     modifier: Modifier = Modifier,
-){
+) {
     Box(
         modifier = modifier
             .background(
                 colorResource(id = R.color.light_baby_blue)
             ),
-    ){
+    ) {
         Column {
 
             //if the user is queued for this attraction:
@@ -356,10 +449,18 @@ fun AttractionDetails(
                 //TODO: add status message for when attraction is closed or maintenance
                 //Queue Time
                 if (attraction.status == "Open") {
-                    val queueTime = if (linkedQueue != null){
-                        calculateEstimatedQueueTime(linkedQueue.aheadInQueue, attraction.avg_capacity, attraction.length)
-                    }else{
-                        calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+                    val queueTime = if (linkedQueue != null) {
+                        calculateEstimatedQueueTime(
+                            linkedQueue.aheadInQueue,
+                            attraction.avg_capacity,
+                            attraction.length
+                        )
+                    } else {
+                        calculateEstimatedQueueTime(
+                            attraction.in_queue,
+                            attraction.avg_capacity,
+                            attraction.length
+                        )
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -373,7 +474,7 @@ fun AttractionDetails(
                                     text = stringResource(id = R.string.attraction_queue_time_label),
                                     style = MaterialTheme.typography.labelLarge
                                 )
-                            }else{
+                            } else {
                                 Text(
                                     text = stringResource(id = R.string.attraction_queue_time_remaining_label),
                                     style = MaterialTheme.typography.labelLarge
@@ -521,15 +622,15 @@ fun AttractionDetails(
     }
 }
 
-fun attractionCostText(cost: Float) : String{
-    return when (cost){
+fun attractionCostText(cost: Float): String {
+    return when (cost) {
         0f -> "Free"
         else -> "€ " + String.format("%.2f", cost)
     }
 }
 
 @Composable
-fun queueTimeColour(time: Int) : Color{
+fun queueTimeColour(time: Int): Color {
     return when {
         time <= 20 -> colorResource(id = R.color.emerald_green)
         (time in 21..44) -> colorResource(id = R.color.maintenance_yellow)
@@ -540,7 +641,7 @@ fun queueTimeColour(time: Int) : Color{
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true)
 @Composable
-fun AttractionDetailsPreview(){
+fun AttractionDetailsPreview() {
     val queue = QueueEntry(0, 150)
     QueueTheme {
         AttractionDetails(
