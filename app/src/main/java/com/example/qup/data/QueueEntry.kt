@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class QueueEntry (
     val attractionId: Int,      //ID of attraciton queue entry is for
+    val callNum: Int,           //The number of times the user has been called to go to an attraction
     val aheadInQueue: Int       //number of people ahead of user in queue
 )

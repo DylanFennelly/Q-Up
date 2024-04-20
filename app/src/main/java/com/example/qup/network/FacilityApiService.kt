@@ -4,9 +4,12 @@ import com.example.qup.data.GetAttractionsApiResponse
 import com.example.qup.data.JoinLeaveQueueApiResponse
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
+import com.example.qup.data.UpdateCallNumApiResponse
+import com.example.qup.data.UpdateCallNumBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 //Handles API calls
@@ -25,4 +28,7 @@ interface FacilityApiService{
     //body and API response have same structure
     @POST("leave-queue")
     suspend fun leaveQueue(@Body body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
+
+    @PUT("update-queue")
+    suspend fun updateQueueCallNum(@Body body: UpdateCallNumBody): UpdateCallNumApiResponse
 }

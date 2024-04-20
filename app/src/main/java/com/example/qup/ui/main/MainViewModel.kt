@@ -12,8 +12,10 @@ import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
+import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,13 +78,21 @@ class MainViewModel(
     }
 
     fun refreshData(userId: Int){
-        getFacilityAttractions()
-        getUserQueues(userId)
-        checkQueueTimes()
+        viewModelScope.launch {
+            //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
+            val attractionsDeferred = async{ getFacilityAttractions() }
+            val queuesDeferred = async{ getUserQueues(userId) }
+
+            attractionsDeferred.await()
+            queuesDeferred.await()
+
+            checkQueueTimes(userId)
+        }
     }
 
     //Check user queues for each attraction and send notifications for ones close to queue
-    fun checkQueueTimes(){
+    fun checkQueueTimes(userId: Int){
+        Log.d("ViewModel", "Starting queue time check")
         when(mainUiState){
             is MainUiState.Success -> {
                 when(queuesUiState){
@@ -98,14 +108,15 @@ class MainViewModel(
                                     linkedAttraction.length
                                 )
 
-                                //if less then 5 minutes left in queue
+                                //if less then 5 minutes left in queue & user has not been called for this queue yet
                                 //TODO: check user location and take into account when to send notification
-                                //TODO: track what queues have had notifications sent for them
-                                if (queueTime < 5){
+                                if (queueTime < 5 && queue.callNum < 1){
+                                    Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
                                     sendNotification(appContext,
                                         "Time to get going!",
                                         "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now.",
                                         queue.attractionId)
+                                    updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
                                 }
                             }
                         }
@@ -121,33 +132,31 @@ class MainViewModel(
     //### REQUESTS ###
 
     //TODO: Add URL String input to function and facilityRepo function
-    fun getFacilityAttractions(){
+    suspend fun getFacilityAttractions(){
         Log.i("ViewModel","Starting API request")
-        viewModelScope.launch {
-            mainUiState = try {
-                Log.i("ViewModel", "Starting coroutine")
-                val listResult = facilityRepository.getAttractions()
-                Log.i("ViewModel", "API result: $listResult.attractionList")
-                MainUiState.Success(listResult.body)
-            }catch (e: IOException){
-                Log.e("ViewModel", "Error on API Call: $e")
-                MainUiState.Error
-            }
+        mainUiState = try {
+            Log.i("ViewModel", "Starting coroutine")
+            val listResult = facilityRepository.getAttractions()
+            Log.i("ViewModel", "API result: $listResult.attractionList")
+            MainUiState.Success(listResult.body)
+        }catch (e: IOException){
+            Log.e("ViewModel", "Error on API Call: $e")
+            MainUiState.Error
         }
+
     }
 
-    fun getUserQueues(userId: Int){
+    suspend fun getUserQueues(userId: Int){
         Log.i("ViewModel","Starting getUserQueues API request")
-        viewModelScope.launch {
-            queuesUiState = try {
-                Log.i("ViewModel", "Starting getUserQueues coroutine")
-                val queuesResult = facilityRepository.getUserQueues(userId)
-                Log.i("ViewModel", "API result: ${queuesResult}")
-                QueuesUiState.Success(queuesResult)
-            }catch (e: IOException){
-                Log.e("ViewModel", "Error on API Call: $e")
-                QueuesUiState.Error
-            }
+
+        queuesUiState = try {
+            Log.i("ViewModel", "Starting getUserQueues coroutine")
+            val queuesResult = facilityRepository.getUserQueues(userId)
+            Log.i("ViewModel", "API result: ${queuesResult}")
+            QueuesUiState.Success(queuesResult)
+        }catch (e: IOException){
+            Log.e("ViewModel", "Error on API Call: $e")
+            QueuesUiState.Error
         }
     }
 
@@ -167,7 +176,7 @@ class MainViewModel(
     }
 
     fun postLeaveAttractionQueue(attractionId: Int, userId: Int){
-        Log.i("ViewModel","Starting Join Queue API request")
+        Log.i("ViewModel","Starting Leave Queue API request")
         viewModelScope.launch {
             joinQueueUiState = try {
                 Log.i("ViewModel","Starting coroutine")
@@ -177,6 +186,19 @@ class MainViewModel(
             }catch (e: IOException) {
                 Log.e("ViewModel", "Error on API Call: $e")
                 JoinQueueUiState.Error
+            }
+        }
+    }
+
+    fun updateQueueCallNum(attractionId: Int, userId: Int, callNum: Int){
+        Log.i("ViewModel","Update Queue Call Num API request")
+        viewModelScope.launch {
+            try {
+                Log.i("ViewModel","Starting coroutine")
+                val updateResult = facilityRepository.updateQueueCallNum(body = UpdateCallNumBody(attractionId, userId, callNum))
+                Log.i("ViewModel", "API result: $updateResult")
+            }catch (e: IOException) {
+                Log.e("ViewModel", "Error on API Call: $e")
             }
         }
     }

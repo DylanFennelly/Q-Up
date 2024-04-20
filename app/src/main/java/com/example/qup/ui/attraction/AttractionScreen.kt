@@ -106,7 +106,7 @@ fun AttractionScreen(
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
-        refreshThreshold = 120.dp,
+        refreshThreshold = 80.dp,
         onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
     var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
@@ -128,6 +128,7 @@ fun AttractionScreen(
                         queuesUiState.userQueues.find { it.attractionId == attraction.id }
 
                     Scaffold(
+                        modifier = Modifier.pullRefresh(pullRefreshState),
                         topBar = {
                             QueueTopAppBar(
                                 title = stringResource(id = R.string.attraction_detail_button),
@@ -260,7 +261,9 @@ fun AttractionScreen(
                         }
 
                     ) { innerPadding ->
-                        Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
+                        Box(
+                            //modifier = Modifier.pullRefresh(pullRefreshState)
+                        ) {
                             AttractionDetails(
                                 attraction = attraction,
                                 linkedQueue = linkedQueue,
@@ -471,12 +474,12 @@ fun AttractionDetails(
                         ) {
                             if (linkedQueue != null) {
                                 Text(
-                                    text = stringResource(id = R.string.attraction_queue_time_label),
+                                    text = stringResource(id = R.string.attraction_queue_time_remaining_label),
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             } else {
                                 Text(
-                                    text = stringResource(id = R.string.attraction_queue_time_remaining_label),
+                                    text = stringResource(id = R.string.attraction_queue_time_label),
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
@@ -642,7 +645,7 @@ fun queueTimeColour(time: Int): Color {
 @Preview(showBackground = true)
 @Composable
 fun AttractionDetailsPreview() {
-    val queue = QueueEntry(0, 150)
+    val queue = QueueEntry(0,0, 150)
     QueueTheme {
         AttractionDetails(
             attraction =

@@ -81,7 +81,7 @@ fun QueuesScreen(
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
-        refreshThreshold = 120.dp,
+        refreshThreshold = 80.dp,
         onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
 
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
@@ -250,7 +250,6 @@ fun QueuesListBody(
                     linkedAttraction.avg_capacity,
                     linkedAttraction.length
                 )
-
                 QueueItemExpandable(
                     title = linkedAttraction.name,
                     queueTime = queueTime,
