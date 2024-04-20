@@ -4,6 +4,7 @@
     <string name="app_welcome">Welcome to Q-Up</string>
     <string name="setu_button">Enter SETU</string>
     <string name="map_title">Attraction Map</string>
+    <string name="permissions_title">App Permissions</string>
     <string name="back_button">Back</string>
     <string name="join_queue_button">Join Queue</string>
     <string name="leave_queue_button">Leave Queue</string>
@@ -44,4 +45,12 @@
     <string name="alert_cancel">Cancel</string>
     <string name="expand_collapse_label">Expand/Collapse</string>
     <string name="attraction_in_queue_label">You are queued for this attraction</string>
+    <string name="permissions_top">Q-Up requires the following permissions to enable full functionality:</string>
+    <string name="permissions_notification_title">Notifications</string>
+    <string name="permissions_notification_desc">Q-Up sends notifications with updates about queues and queue times.</string>
+    <string name="permissions_ask">Please press the button below and allow all permissions to continue to the application.</string>
+    <string name="permissions_button">Check Permissions</string>
+    <string name="permissions_denied">Permissions Denied</string>
+    <string name="permissions_denied_desc">One or more app permissions were denied. These permissions are required for the app to function. Please go to the app settings and enable permissions for Notifications</string>
+    <string name="open_settings_button">Open Settings</string>
 </resources>
