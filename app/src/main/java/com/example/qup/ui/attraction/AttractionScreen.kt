@@ -645,7 +645,7 @@ fun queueTimeColour(time: Int): Color {
 @Preview(showBackground = true)
 @Composable
 fun AttractionDetailsPreview() {
-    val queue = QueueEntry(0,0, 150)
+    val queue = QueueEntry(0,0, 150, "2024-04-21T12:03:24Z")
     QueueTheme {
         AttractionDetails(
             attraction =

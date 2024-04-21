@@ -134,11 +134,10 @@ class MainViewModel(
                                         //modifier to add to check queue time on based on distance from attraciton
                                         val queueTimeModifier = ((distance/100) * 2).roundToInt()
 
-                                        //TODO: check user location and take into account when to send notification
                                         Log.d("Location", "queueTimeMod: ${queueTimeModifier}")
                                         val firstCallQueueTime = 5 + queueTimeModifier
                                         Log.d("Location", "firstCallQueueTime: ${firstCallQueueTime}")
-                                        //Log.d("Location", "time: ${Instant.now()}")
+                                        Log.d("Location", Instant.now().toString())
 
                                         //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
                                         if (queueTime < firstCallQueueTime && queue.callNum < 1){
@@ -151,8 +150,9 @@ class MainViewModel(
                                         }
                                     }else{
                                         //Calculate without queuetime mod
-                                        val firstCallQueueTime = 5
-                                        //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
+                                        val firstCallQueueTime = 10         //If no location, user longer estimation
+
+                                        //if less then 10 mins & user has not been called for this queue yet
                                         if (queueTime < firstCallQueueTime && queue.callNum < 1){
                                             Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
                                             sendNotification(appContext,
