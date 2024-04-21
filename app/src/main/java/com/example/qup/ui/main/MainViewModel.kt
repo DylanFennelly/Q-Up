@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.time.Duration
 import java.time.Instant
 import kotlin.math.roundToInt
 
@@ -117,6 +118,8 @@ class MainViewModel(
 
                                 getUserLocation { location ->
                                     if (location != null){
+                                        Log.d("Location", "Queue: ${linkedAttraction.name}")
+                                        Log.d("Location", "Call num: ${queue.callNum}")
                                         Log.d("Location", "User latitiude: ${location.latitude}")
                                         Log.d("Location", "User longitude: ${location.longitude}")
 
@@ -133,33 +136,146 @@ class MainViewModel(
 
                                         //modifier to add to check queue time on based on distance from attraciton
                                         val queueTimeModifier = ((distance/100) * 2).roundToInt()
-
-                                        Log.d("Location", "queueTimeMod: ${queueTimeModifier}")
                                         val firstCallQueueTime = 5 + queueTimeModifier
+                                        Log.d("Location", "queueTimeMod: ${queueTimeModifier}")
                                         Log.d("Location", "firstCallQueueTime: ${firstCallQueueTime}")
-                                        Log.d("Location", Instant.now().toString())
+
+
+                                        val timeNow = Instant.now()
+                                        val lastUpdatedTime = Instant.parse(queue.lastUpdated)
+                                        val minsBetween = Duration.between(lastUpdatedTime, Instant.now()).toMinutes()
+
+                                        //How long until each reminder/queue removal occurs
+                                        val reminderOne = 10
+                                        val reminderTwo = 5
+                                        val reminderRemove = 5
+
+                                        Log.d("Location", "Time now: $timeNow")
+                                        Log.d("Location", "Last updated: $lastUpdatedTime")
+                                        Log.d("Location", "Duration between times: $minsBetween")
+
+
+                                        //if less than 5 mins in queue & user hasnt been called/has had initial call
+                                        if(queueTime <= 5 && queue.callNum < 2){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entrance Ticket Available!",
+                                                "Your entrance ticket for ${linkedAttraction.name} is now available.\n\nGo to Your Queues to view the ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 2)       //2 = entrance ticket created
+                                        }
 
                                         //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
-                                        if (queueTime < firstCallQueueTime && queue.callNum < 1){
+                                        else if (queueTime <= firstCallQueueTime && queue.callNum == 0){
                                             Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
                                             sendNotification(appContext,
                                                 "Time to get going!",
                                                 "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
+                                            updateQueueCallNum(queue.attractionId, userId, 1)       //1 = called to start heading toward attraction
                                         }
+
+                                        //if it has been 10 minutes since entrance ticket generated
+                                        else if (
+                                            minsBetween >= reminderOne && queue.callNum == 2){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entry Reminder",
+                                                "Your entry ticket for ${linkedAttraction.name} is available.\n\nBe sure to enter the attraction in the next ${reminderOne} minutes or you will lose your ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 3)       //3 = reminder to go to attraction
+                                        }
+
+                                        //if it has been 5 minutes since reminder
+                                        else if (
+                                            minsBetween >= reminderTwo && queue.callNum == 3
+                                            ){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entry Reminder",
+                                                "Your entry ticket for ${linkedAttraction.name} is available.\n\nEnter the attraction within the next ${reminderRemove} minutes or you will lose your ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 4)       //4 = final reminder
+                                        }
+
+                                        //if it has been 5 minutes since final reminder
+                                        else if (minsBetween >= reminderRemove && queue.callNum == 4){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Ticket Expired",
+                                                "Your entry ticket for ${linkedAttraction.name} has expired. You have been removed from the queue for this attraction.",
+                                                queue.attractionId)
+
+                                            updateQueueCallNum(queue.attractionId, userId, 5)       //to prevent notification from being sent twice
+                                            postLeaveAttractionQueue(queue.attractionId, userId)
+                                            refreshData(userId) //refresh data afterwards to remove queue from view     TODO: doesnt seem to be working, must refresh again to remove from view
+                                        }
+
+
                                     }else{
                                         //Calculate without queuetime mod
                                         val firstCallQueueTime = 10         //If no location, user longer estimation
+                                        val reminderOne = 10
+                                        val reminderTwo = 5
+                                        val reminderRemove = 5
 
-                                        //if less then 10 mins & user has not been called for this queue yet
-                                        if (queueTime < firstCallQueueTime && queue.callNum < 1){
+                                        val timeNow = Instant.now()
+                                        val lastUpdatedTime = Instant.parse(queue.lastUpdated)
+                                        val minsBetween = Duration.between(lastUpdatedTime, Instant.now()).toMinutes()
+
+                                        if(queueTime <= 5 && queue.callNum < 2){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entrance Ticket Available!",
+                                                "Your entrance ticket for ${linkedAttraction.name} is now available.\n\nGo to Your Queues to view the ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 2)       //2 = entrance ticket created
+                                        }
+
+                                        //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
+                                        else if (queueTime <= firstCallQueueTime && queue.callNum == 0){
                                             Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
                                             sendNotification(appContext,
                                                 "Time to get going!",
                                                 "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
+                                            updateQueueCallNum(queue.attractionId, userId, 1)       //1 = called to start heading toward attraction
+                                        }
+
+                                        //if it has been 10 minutes since entrance ticket generated
+                                        else if (
+                                            minsBetween >= reminderOne && queue.callNum == 2){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entry Reminder",
+                                                "Your entry ticket for ${linkedAttraction.name} is available.\n\nBe sure to enter the attraction in the next ${reminderOne} minutes or you will lose your ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 3)       //3 = reminder to go to attraction
+                                        }
+
+                                        //if it has been 5 minutes since reminder
+                                        else if (
+                                            minsBetween >= reminderTwo && queue.callNum == 3
+                                        ){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Entry Reminder",
+                                                "Your entry ticket for ${linkedAttraction.name} is available.\n\nEnter the attraction within the next ${reminderRemove} minutes or you will lose your ticket.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, 4)       //4 = final reminder
+                                        }
+
+                                        //if it has been 5 minutes since final reminder
+                                        else if (minsBetween >= reminderRemove && queue.callNum == 4){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Ticket Expired",
+                                                "Your entry ticket for ${linkedAttraction.name} has expired. You have been removed from the queue for this attraction.",
+                                                queue.attractionId)
+
+                                            updateQueueCallNum(queue.attractionId, userId, 5)       //to prevent notification from being sent twice
+                                            postLeaveAttractionQueue(queue.attractionId, userId)
+                                            refreshData(userId) //refresh data afterwards to remove queue from view     TODO: doesnt seem to be working, must refresh again to remove from view
                                         }
 
                                     }
