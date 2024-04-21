@@ -1,6 +1,10 @@
 package com.example.qup.ui.main
 
 import android.content.Context
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +25,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.time.Instant
+import kotlin.math.roundToInt
 
 sealed interface MainUiState {
     data class Success(val attractions: List<Attraction>) : MainUiState
@@ -63,6 +69,7 @@ class MainViewModel(
 
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefreshing.asStateFlow()
+
 
     init{
         Log.i("ViewModel","MainViewModel Init")
@@ -108,15 +115,54 @@ class MainViewModel(
                                     linkedAttraction.length
                                 )
 
-                                //if less then 5 minutes left in queue & user has not been called for this queue yet
-                                //TODO: check user location and take into account when to send notification
-                                if (queueTime < 5 && queue.callNum < 1){
-                                    Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
-                                    sendNotification(appContext,
-                                        "Time to get going!",
-                                        "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now.",
-                                        queue.attractionId)
-                                    updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
+                                getUserLocation { location ->
+                                    if (location != null){
+                                        Log.d("Location", "User latitiude: ${location.latitude}")
+                                        Log.d("Location", "User longitude: ${location.longitude}")
+
+                                        //https://developer.android.com/reference/android/location/Location.html#distanceBetween(double,%20double,%20double,%20double,%20float[])
+                                        val results = FloatArray(3)
+                                        Location.distanceBetween(linkedAttraction.lat, linkedAttraction.lng, location.latitude, location.longitude, results)
+                                        val distance = results[0]       //results in meters
+                                        Log.d("Location", "Distance between: ${results[0]}")
+
+                                        //Average human walks 100m in about 70 secs -> https://online-calculator.org/how-long-does-it-take-to-walk-100-meters
+                                        //distanceBetween draws straight line between points -> users will most likely not be able to walk straight between points
+                                        //round up to 2 mins -> every 100m means 1st notification will be sent 2 mins early
+                                        //distance/100 * 2 -> 100m = 2 mins added, 350m -> 5mins added
+
+                                        //modifier to add to check queue time on based on distance from attraciton
+                                        val queueTimeModifier = ((distance/100) * 2).roundToInt()
+
+                                        //TODO: check user location and take into account when to send notification
+                                        Log.d("Location", "queueTimeMod: ${queueTimeModifier}")
+                                        val firstCallQueueTime = 5 + queueTimeModifier
+                                        Log.d("Location", "firstCallQueueTime: ${firstCallQueueTime}")
+                                        //Log.d("Location", "time: ${Instant.now()}")
+
+                                        //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
+                                        if (queueTime < firstCallQueueTime && queue.callNum < 1){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Time to get going!",
+                                                "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
+                                        }
+                                    }else{
+                                        //Calculate without queuetime mod
+                                        val firstCallQueueTime = 5
+                                        //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
+                                        if (queueTime < firstCallQueueTime && queue.callNum < 1){
+                                            Log.d("CheckQueueTime", "Sending notificaiton for Attraction ${linkedAttraction.name} and Call Num ${queue.callNum}")
+                                            sendNotification(appContext,
+                                                "Time to get going!",
+                                                "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
+                                                queue.attractionId)
+                                            updateQueueCallNum(queue.attractionId, userId, (queue.callNum+1))
+                                        }
+
+                                    }
                                 }
                             }
                         }
@@ -200,6 +246,33 @@ class MainViewModel(
             }catch (e: IOException) {
                 Log.e("ViewModel", "Error on API Call: $e")
             }
+        }
+    }
+
+
+    //### MISC ###
+    //https://developer.android.com/develop/sensors-and-location/location/request-updates
+    //https://medium.com/@grudransh1/best-way-to-get-users-location-in-android-app-using-location-listener-from-java-in-android-studio-77882f8b87fd
+    fun getUserLocation(onLocationReceived: (Location?) -> Unit) {
+        val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationListener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                onLocationReceived(location)
+                // After receiving the first location update, remove the listener to avoid further updates
+                locationManager.removeUpdates(this)
+            }
+
+            override fun onProviderDisabled(provider: String) {}
+            override fun onProviderEnabled(provider: String) {}
+            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+        }
+
+        try {
+            // Requesting location updates
+            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null)
+        } catch (ex: SecurityException) {
+            // Handle case where location permissions are not granted
+            onLocationReceived(null)
         }
     }
 

@@ -319,7 +319,7 @@ fun AttractionScreen(
                         is JoinQueueUiState.Result -> {
                             AlertDialog(
                                 onDismissRequest = {
-                                    mainViewModel.refreshData(0)
+                                    mainViewModel.refreshData(0)        //TODO: hardcoded user ID
                                     mainViewModel.joinQueueUiState = JoinQueueUiState.Idle
                                 },
                                 title = {
