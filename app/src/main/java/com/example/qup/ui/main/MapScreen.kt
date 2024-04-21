@@ -1,6 +1,8 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -27,8 +29,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,11 +45,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.RefreshService
 import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
@@ -88,6 +96,13 @@ fun MapScreen(
 ){
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    val context = LocalContext.current
+
+
+    //Starting the refresh service:
+    LaunchedEffect(0) {     //TODO: hardcoded userId
+        mainViewModel.startServiceIfNotStarted(context,0)
+    }
 
     Scaffold(
         topBar = {

@@ -16,9 +16,13 @@ import androidx.core.content.ContextCompat
 import com.example.qup.ui.theme.QueueTheme
 import android.Manifest
 import android.app.AlertDialog
+import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.helpers.sendNotification
+import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.MainViewModel
 
 class MainActivity : ComponentActivity() {
     // Creating notification channel - https://developer.android.com/develop/ui/views/notifications/build-notification#kotlin
@@ -35,11 +39,15 @@ class MainActivity : ComponentActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createNotificationChannel(this)
 
         setContent {
+            //val mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)
             QueueTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(

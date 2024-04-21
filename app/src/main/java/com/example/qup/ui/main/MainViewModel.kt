@@ -1,9 +1,11 @@
 package com.example.qup.ui.main
 
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -12,10 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.qup.RefreshService
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
+import com.example.qup.data.RequestsRepository
 import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
@@ -51,7 +55,8 @@ sealed interface JoinQueueUiState {
 class MainViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository,
-    private val appContext: Context
+    private val appContext: Context,
+    private val requestsRepository: RequestsRepository,
 ): ViewModel() {
 
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
@@ -62,7 +67,6 @@ class MainViewModel(
 
     var joinQueueUiState: JoinQueueUiState by mutableStateOf(JoinQueueUiState.Idle)
 
-
     //Pull down to refresh data:
     // https://canlioya.medium.com/customise-pull-to-refresh-on-android-with-jetpack-compose-24a7119a4b94
     // https://medium.com/google-developer-experts/effortlessly-add-pull-to-refresh-to-your-android-app-with-jetpack-compose-4c8b218a9beb
@@ -71,9 +75,21 @@ class MainViewModel(
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefreshing.asStateFlow()
 
+    private var isServiceStarted = false
+
 
     init{
         Log.i("ViewModel","MainViewModel Init")
+    }
+
+    fun startServiceIfNotStarted(context: Context, userId: Int) {
+        if (!isServiceStarted) {
+            val serviceIntent = Intent(context, RefreshService::class.java).apply {
+                putExtra("userId", userId)
+            }
+            context.startService(serviceIntent)
+            isServiceStarted = true
+        }
     }
 
     fun getFacilityName(): String{
@@ -87,6 +103,7 @@ class MainViewModel(
 
     fun refreshData(userId: Int){
         viewModelScope.launch {
+            requestsRepository.testFunction()
             //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
             val attractionsDeferred = async{ getFacilityAttractions() }
             val queuesDeferred = async{ getUserQueues(userId) }

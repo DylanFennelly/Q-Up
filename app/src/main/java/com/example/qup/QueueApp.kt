@@ -1,5 +1,7 @@
 package com.example.qup
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -30,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.qup.ui.navigation.AppNavGraph
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun QueueApp(navController: NavHostController = rememberNavController()){
     AppNavGraph(navController = navController)
