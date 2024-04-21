@@ -45,7 +45,7 @@ class TicketViewModel(
                 Log.i("TicketViewModel", "ValidQueue: $validQueue")
                 if (validQueue != null){
                     Log.i("TicketViewModel", "ValidQueue found")
-                    val qrCodeBitmap = generateTicketQR(baseUrl + "test-data")
+                    val qrCodeBitmap = generateTicketQR(baseUrl + "complete-queue?userId=$userId&attractionId=$attractionId")
                     if (qrCodeBitmap != null) {
                         TicketUiState.Success(qrCodeBitmap)
                     }else{

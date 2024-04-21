@@ -18,6 +18,7 @@ import java.io.IOException
 class AttractionViewModel(
     savedStateHandle: SavedStateHandle,
 ): ViewModel(){
+    //TODO: copy how backstack arguments are used in TicketScreen
     val attractionId: Int =
         checkNotNull(savedStateHandle[AttractionDestination.attractionID])
 }
