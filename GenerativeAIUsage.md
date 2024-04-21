@@ -908,6 +908,238 @@ Key Changes:
 
 ```
 
+## Generative AI Usage 6.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help with requesting multiple permissions at once.
+
+#### Chat log:
+```
+User:
+
+I am developing an Android app using Kotlin and Jetpack Compose. The app requires permissions for both Notifications and User Location. Both of these permissions are in the Manifest file. I have a Composable Screen view that is used to explain to the user what each permission is being used for, along with then asking for the permissions upon button click. Currently, it is only checking for one permission - Notifications. I want to add an additional permission to this check, such that when the button is pressed (and it MUST occur on a button press), it asks for both the Notification and Location permissions before proceeding to the next app view, MapView. Below is snippets from my code relevant to the permission check:
+
+PermissionsScreen:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun PermissionsScreen(
+    modifier: Modifier = Modifier,
+    canNavigateBack: Boolean = true,
+    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+){
+    val context = LocalContext.current
+    val showDeniedDialogState = remember { mutableStateOf(false) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    //Requesting permissions: https://developer.android.com/training/permissions/requesting
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("Permissions","All permissions granted")
+            // all permissions granted -> continue to map
+            navigateToMap("SETU")       //TODO: remove string
+        } else {
+            // permission denied -> show dialog
+            showDeniedDialogState.value = true
+        }
+    }
+
+
+    //Generate AI Usage 4.
+    //Observes for changes in the settings for permission updates
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            //when app is resumed, check permissions
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    //&& other permissions
+                    ) {
+                    Log.d("Permissions", "Permission check on resume: GRANTED")
+                    navigateToMap("map_screen_route")
+                } else {
+                    Log.d("Permissions", "Permission check on resume: DENIED")
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
+
+    Scaffold(
+        topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack)}
+    ) {innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)){
+            PermissionsBody(context = context, requestPermissionLauncher = requestPermissionLauncher)
+        }
+        ShowPermissionDeniedDialog(showDeniedDialogState, context)
+    }
+}"
+
+checkAllPermissions:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkAllPermissions(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>){
+    checkNotificationPermission(context, requestPermissionLauncher)
+}"
+
+checkNotificationPermission:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkNotificationPermission(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+    when {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                //&& Other permissions
+        -> {
+            Log.d("Permissions","Notification Permission granted")
+            //Permission granted -> go to map
+        }
+
+        //Generative AI Usage 3.
+        context is Activity && context.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+            // Explain to user reason for permission
+            Log.d("Permissions","Notification Permission ask")
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        //Request other permissions here
+
+
+        else -> {
+            Log.d("Permissions","Notification Permission ask")
+            // directly ask for the permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}"
+
+ShowPermissionDeniedDialog:
+"@Composable
+fun ShowPermissionDeniedDialog(showDialog: MutableState<Boolean>, context: Context) {
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(stringResource(id = R.string.permissions_denied)) },
+            text = {
+                Text(stringResource(id = R.string.permissions_denied_desc))
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog.value = false
+
+                    //Open app settings: https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+
+                    context.startActivity(intent)
+                }) {
+                    Text(stringResource(id = R.string.open_settings_button))
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    showDialog.value = false
+                }) {
+                    Text(stringResource(id = R.string.alert_cancel))
+                }
+            }
+        )
+    }
+}"
+
+
+ChatGPT:
+
+To modify your existing Jetpack Compose app to request both Notifications and Location permissions simultaneously upon a button click, you will need to update your permissions handling code to support checking and requesting multiple permissions at once. This involves using the ActivityResultContracts.RequestMultiplePermissions instead of ActivityResultContracts.RequestPermission, which is used for a single permission.
+
+Here is how you can adjust your existing Kotlin code:
+
+    Update the Permissions Screen: Change the launcher to handle multiple permissions.
+    Modify the permission check functions: You need to adapt the check and request logic to handle multiple permissions.
+
+Step 1: Update Permissions Screen
+
+Update the PermissionsScreen composable to use ActivityResultContracts.RequestMultiplePermissions:
+
+kotlin
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun PermissionsScreen(
+    modifier: Modifier = Modifier,
+    canNavigateBack: Boolean = true,
+    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+) {
+    val context = LocalContext.current
+    val showDeniedDialogState = remember { mutableStateOf(false) }
+
+    // New launcher for requesting multiple permissions
+    val requestMultiplePermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            Log.d("Permissions", "All permissions granted")
+            navigateToMap("map_screen_route")
+        } else {
+            showDeniedDialogState.value = true
+        }
+    }
+
+    // You may reuse other parts of your existing composable here...
+
+    // Now use requestMultiplePermissionsLauncher in your button click
+    Button(onClick = { 
+        checkAllPermissions(context, requestMultiplePermissionsLauncher)
+    }) {
+        Text("Request Permissions")
+    }
+}
+
+Step 2: Modify the Permission Check Functions
+
+Change the checkAllPermissions function to handle multiple permissions:
+
+kotlin
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkAllPermissions(context: Context, requestMultiplePermissionsLauncher: ManagedActivityResultLauncher<Map<String, Boolean>>) {
+    val requiredPermissions = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.ACCESS_FINE_LOCATION // Add other permissions if needed
+    )
+
+    val allPermissionsGranted = requiredPermissions.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    if (!allPermissionsGranted) {
+        requestMultiplePermissionsLauncher.launch(requiredPermissions)
+    } else {
+        Log.d("Permissions", "All permissions are already granted")
+        // Navigate or perform next steps directly
+    }
+}
+
+Handling Permission Explanation
+
+If your app requires a rationale for permissions, you should check each permission individually before calling launch on requestMultiplePermissionsLauncher. This can be done by showing custom UI elements or dialogs explaining why these permissions are needed before the permission request if the shouldShowRequestPermissionRationale condition is met for any permissions.
+
+Finally, ensure your AndroidManifest.xml includes the necessary permissions, especially for location, which may require both ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION depending on the accuracy you need.
+
+This setup will prompt the user for all necessary permissions at once when the button is clicked, and you will be able to handle the result in the callback of the requestMultiplePermissionsLauncher.
+```
+
 
 
 

@@ -14,16 +14,15 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -73,32 +72,31 @@ fun PermissionsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     //Requesting permissions: https://developer.android.com/training/permissions/requesting
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            Log.d("Permissions","All permissions granted")
-            // all permissions granted -> continue to map
-            navigateToMap("SETU")       //TODO: remove string
+    // Generative AI Usage 6.
+    val requestMultiplePermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            Log.d("Permissions", "All permissions granted")
+            navigateToMap("SETU")
         } else {
-            // permission denied -> show dialog
             showDeniedDialogState.value = true
         }
     }
 
 
-    //Generate AI Usage 4.
-    //Observes for changes in the settings for permission updates
+//    Generate AI Usage 4.
+//    Observes for changes in the settings for permission updates
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             //when app is resumed, check permissions
             if (event == Lifecycle.Event.ON_RESUME) {
                 if (
                     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                    //&& other permissions
+                    && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                     ) {
                     Log.d("Permissions", "Permission check on resume: GRANTED")
-                    navigateToMap("map_screen_route")
+                    navigateToMap("SETU")
                 } else {
                     Log.d("Permissions", "Permission check on resume: DENIED")
                 }
@@ -116,7 +114,7 @@ fun PermissionsScreen(
         topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack)}
     ) {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
-            PermissionsBody(context = context, requestPermissionLauncher = requestPermissionLauncher)
+            PermissionsBody(context = context, requestPermissionLauncher = requestMultiplePermissionsLauncher)
         }
         ShowPermissionDeniedDialog(showDeniedDialogState, context)
     }
@@ -129,7 +127,7 @@ fun PermissionsScreen(
 fun PermissionsBody(
     modifier: Modifier = Modifier,
     context: Context,
-    requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>
+    requestPermissionLauncher:  ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>
 ){
     Column(
         modifier= Modifier
@@ -169,17 +167,17 @@ fun PermissionsBody(
             modifier = Modifier.padding(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = stringResource(id = R.string.permissions_notification_title),
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = stringResource(id = R.string.permissions_Location_title),
                 modifier = Modifier.padding(end = 16.dp)
             )
             Column {
                 Text(
-                    text = stringResource(id = R.string.permissions_notification_title),
+                    text = stringResource(id = R.string.permissions_Location_title),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = stringResource(id = R.string.permissions_notification_desc),
+                    text = stringResource(id = R.string.permissions_Location_desc),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -259,35 +257,28 @@ fun ShowPermissionDeniedDialog(showDialog: MutableState<Boolean>, context: Conte
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun checkAllPermissions(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>){
-    checkNotificationPermission(context, requestPermissionLauncher)
-}
+fun checkAllPermissions(context: Context, requestMultiplePermissionsLauncher:  ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>) {
+    val requiredPermissions = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-fun checkNotificationPermission(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
-    when {
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                //&& Other permissions
-        -> {
-            Log.d("Permissions","Notification Permission granted")
-            //Permission granted -> go to map
-        }
+    val isNotificationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    //Granted either Fine or Coarse location
+    val isLocationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
-        //Generative AI Usage 3.
-        context is Activity && context.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-            // Explain to user reason for permission
-            Log.d("Permissions","Notification Permission ask")
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+    //if one of the permissions is missing
+    if (!isNotificationPermissionGranted || !isLocationPermissionGranted) {
+        // only requesting permissions that have not been granted yet
+        // filtering granted permissions out of the permissions array
+        val permissionsToRequest = requiredPermissions.filter { ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED }.toTypedArray()
 
-        //Request other permissions here
-
-
-        else -> {
-            Log.d("Permissions","Notification Permission ask")
-            // directly ask for the permission
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        requestMultiplePermissionsLauncher.launch(permissionsToRequest)
+    } else {
+        Log.d("Permissions", "All permissions are already granted")
+        // Navigate or perform next steps directly
     }
 }
 

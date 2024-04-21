@@ -88,7 +88,7 @@ fun HomeBody(
                 //if app has all permissions it needs, proceed to map. else, go to permissions screen and request permissions
                 if (
                     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)  == PackageManager.PERMISSION_GRANTED
-                    //&& other permissions
+                    && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                     ){
                     //sendNotification(context)
                     navigateToMap("SETU")//TODO: Change to use actual data, not raw string
