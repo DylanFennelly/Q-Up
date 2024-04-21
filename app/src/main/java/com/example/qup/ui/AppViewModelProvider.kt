@@ -9,6 +9,7 @@ import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.ui.attraction.AttractionViewModel
 import com.example.qup.ui.home.HomeViewModel
 import com.example.qup.ui.main.MainViewModel
+import com.example.qup.ui.ticket.TicketViewModel
 
 //Provides factory to instantiate ViewModels
 object AppViewModelProvider{
@@ -26,6 +27,13 @@ object AppViewModelProvider{
         initializer {
             AttractionViewModel(
                 this.createSavedStateHandle(),
+            )
+        }
+
+        initializer {
+            TicketViewModel(
+                queueApplicationContainer().container.facilityRepository,
+                queueApplicationContainer().container.baseUrl
             )
         }
     }
