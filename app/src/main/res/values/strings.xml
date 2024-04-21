@@ -55,4 +55,8 @@
     <string name="permissions_denied">Permissions Denied</string>
     <string name="permissions_denied_desc">One or more app permissions were denied. These permissions are required for the app to function. Please go to the app settings and enable permissions for Notifications</string>
     <string name="open_settings_button">Open Settings</string>
+    <string name="entrance_ticket_available">Entrance ticket available</string>
+    <string name="entrance_ticket_expired">Entrance ticket expired</string>
+    <string name="entrance_ticket_button">View Entrance Ticket</string>
+    <string name="entrance_ticket_title">Entrance Ticket</string>
 </resources>

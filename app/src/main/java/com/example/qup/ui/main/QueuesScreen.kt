@@ -72,6 +72,7 @@ fun QueuesScreen(
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
+    navigateToTicket: (Int, Int) -> Unit,
     mainViewModel: MainViewModel,
     facilityName: String,
     mainUiState: MainUiState,
@@ -132,6 +133,7 @@ fun QueuesScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .pullRefresh(pullRefreshState)
+                .fillMaxSize()
         ) {
             when (mainUiState) {
                 is MainUiState.Loading -> {
@@ -152,6 +154,7 @@ fun QueuesScreen(
                                     toggleLeaveConfirmation = ::toggleLeaveConfirmation,
                                     toggleHasLeftConfirmation = ::toggleHasLeftConfirmation,
                                     navigateToAttraction = navigateToAttraction,
+                                    navigateToTicket = navigateToTicket,
                                     setAttractionName = ::setAttractionName,
                                     setAttractionId = ::setAttractionId,
                                     modifier = Modifier
@@ -233,6 +236,7 @@ fun QueuesListBody(
     attractions: List<Attraction>,
     modifier: Modifier = Modifier,
     navigateToAttraction: (Int) -> Unit,
+    navigateToTicket: (Int, Int) -> Unit,
     toggleLeaveConfirmation: () -> Unit,
     toggleHasLeftConfirmation: () -> Unit,
     setAttractionName: (String) -> Unit,
@@ -253,46 +257,198 @@ fun QueuesListBody(
                 QueueItemExpandable(
                     title = linkedAttraction.name,
                     queueTime = queueTime,
+                    callNum = queue.callNum,
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Row {
-                        Spacer(modifier = Modifier.weight(0.3f))
-                        Button(
-                            onClick = {
-                                setAttractionName(linkedAttraction.name)
-                                setAttractionId(queue.attractionId)
-                                toggleLeaveConfirmation()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(
-                                    id = R.color.closed_red
+                    Column {
+                        Row{
+                            Spacer(modifier = Modifier.weight(0.3f))
+                            Button(
+                                onClick = {
+                                    setAttractionName(linkedAttraction.name)
+                                    setAttractionId(queue.attractionId)
+                                    toggleLeaveConfirmation()
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(
+                                        id = R.color.closed_red
+                                    )
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.leave_queue_button),
+                                    textAlign = TextAlign.Center
                                 )
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.leave_queue_button),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(0.3f))
-                        Button(
-                            onClick = { navigateToAttraction(linkedAttraction.id) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(
-                                    id = R.color.baby_blue
+                            }
+                            Spacer(modifier = Modifier.weight(0.3f))
+                            Button(
+                                onClick = { navigateToAttraction(linkedAttraction.id) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(
+                                        id = R.color.baby_blue
+                                    )
+                                ),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.attraction_detail_button),
+                                    textAlign = TextAlign.Center
                                 )
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.attraction_detail_button),
-                                textAlign = TextAlign.Center
-                            )
+                            }
+                            Spacer(modifier = Modifier.weight(0.3f))
                         }
-                        Spacer(modifier = Modifier.weight(0.3f))
+                        ///if ticket available
+                        if (queue.callNum in 2..4) {
+                            Row(modifier= Modifier.padding(8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                Button(
+                                    onClick = {
+                                        navigateToTicket(queue.attractionId, 0)     //TODO: hardcoded user ID
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colorResource(
+                                            id = R.color.emerald_green
+                                        )
+                                    ),
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.entrance_ticket_button),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+            }
+        }
+    }
+}
+
+
+
+//Expandable item - https://proandroiddev.com/creating-expandable-sections-with-compose-c0e827fb6910
+@Composable
+fun QueueItemTitle(
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean,
+    callNum: Int,
+    title: String,
+    queueTime: Int
+) {
+    val icon = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown
+
+    Column {
+        //If entrance ticket available
+        if (callNum in 2..4){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.emerald_green),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(4.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.entrance_ticket_available),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colorResource(id = R.color.white)
+                )
+            }
+        }else if (callNum == 5){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.closed_red),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(4.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.entrance_ticket_expired),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colorResource(id = R.color.white)
+                )
+            }
+        }
+        Row(
+            modifier = modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(10f)
+            )
+            Spacer(Modifier.weight(0.1f))
+            Image(
+                modifier = Modifier.size(32.dp),
+                imageVector = icon,
+                //colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer),
+                contentDescription = stringResource(id = R.string.expand_collapse_label)
+            )
+        }
+        Row(
+            modifier = modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = stringResource(id = R.string.attraction_queue_time_remaining_label),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
+                style = MaterialTheme.typography.headlineSmall,
+                color = queueTimeColour(time = queueTime)
+            )
+        }
+    }
+}
+
+@Composable
+fun QueueItemExpandable(
+    modifier: Modifier = Modifier,
+    queueTime: Int,
+    callNum: Int,
+    title: String,
+    content: @Composable () -> Unit
+) {
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .background(
+                color = colorResource(id = R.color.light_baby_blue),
+                shape = RoundedCornerShape(10.dp)
+            )
+    ) {
+        Column(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            QueueItemTitle(
+                isExpanded = isExpanded,
+                title = title,
+                queueTime = queueTime,
+                callNum = callNum,
+                modifier = Modifier
+                    .clickable { isExpanded = !isExpanded }
+            )
+
+            AnimatedVisibility(
+                modifier = Modifier
+                    .background(color = colorResource(id = R.color.light_baby_blue))
+                    .fillMaxWidth(),
+                visible = isExpanded
+            ) {
+                content()
             }
         }
     }
@@ -369,91 +525,4 @@ fun HasLeftAlert(
             }
         }
     )
-}
-
-
-//Expandable item - https://proandroiddev.com/creating-expandable-sections-with-compose-c0e827fb6910
-@Composable
-fun QueueItemTitle(
-    modifier: Modifier = Modifier,
-    isExpanded: Boolean,
-    title: String,
-    queueTime: Int
-) {
-    val icon = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown
-
-    Column {
-        Row(
-            modifier = modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(10f)
-            )
-            Spacer(Modifier.weight(0.1f))
-            Image(
-                modifier = Modifier.size(32.dp),
-                imageVector = icon,
-                //colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer),
-                contentDescription = stringResource(id = R.string.expand_collapse_label)
-            )
-        }
-        Row(
-            modifier = modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier
-                    .weight(1f),
-                text = stringResource(id = R.string.attraction_queue_time_remaining_label),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
-                style = MaterialTheme.typography.headlineSmall,
-                color = queueTimeColour(time = queueTime)
-            )
-        }
-    }
-}
-
-@Composable
-fun QueueItemExpandable(
-    modifier: Modifier = Modifier,
-    queueTime: Int,
-    title: String,
-    content: @Composable () -> Unit
-) {
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .padding(8.dp)
-            .background(
-                color = colorResource(id = R.color.light_baby_blue),
-                shape = RoundedCornerShape(10.dp)
-            )
-    ) {
-        Column(
-            modifier = modifier.fillMaxWidth()
-        ) {
-            QueueItemTitle(
-                isExpanded = isExpanded,
-                title = title,
-                queueTime = queueTime,
-                modifier = Modifier
-                    .clickable { isExpanded = !isExpanded }
-            )
-
-            AnimatedVisibility(
-                modifier = Modifier
-                    .background(color = colorResource(id = R.color.light_baby_blue))
-                    .fillMaxWidth(),
-                visible = isExpanded
-            ) {
-                content()
-            }
-        }
-    }
 }

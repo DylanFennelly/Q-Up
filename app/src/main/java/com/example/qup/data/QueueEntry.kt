@@ -23,4 +23,4 @@ data class QueueEntry (
 //
 //4 = 5mins. after 3 → final reminder to enter attraction
 //
-//5 mins after 4 → removed from queue
+//5 = 5 mins after 4 → removed from queue

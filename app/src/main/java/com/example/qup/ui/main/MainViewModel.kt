@@ -207,8 +207,11 @@ class MainViewModel(
                                                 queue.attractionId)
 
                                             updateQueueCallNum(queue.attractionId, userId, 5)       //to prevent notification from being sent twice
-                                            postLeaveAttractionQueue(queue.attractionId, userId)
                                             refreshData(userId) //refresh data afterwards to remove queue from view     TODO: doesnt seem to be working, must refresh again to remove from view
+                                        }
+
+                                        else if (queue.callNum == 5){       //if call num == 5, remove
+                                            postLeaveAttractionQueue(queue.attractionId, userId)
                                         }
 
 

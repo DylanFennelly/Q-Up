@@ -25,6 +25,8 @@ import com.example.qup.ui.main.PermissionsDestination
 import com.example.qup.ui.main.PermissionsScreen
 import com.example.qup.ui.main.QueuesDestination
 import com.example.qup.ui.main.QueuesScreen
+import com.example.qup.ui.ticket.TicketDestination
+import com.example.qup.ui.ticket.TicketScreen
 import com.google.android.gms.maps.model.LatLng
 
 //Defines navigation destinations for app views
@@ -46,9 +48,7 @@ fun AppNavGraph(
             HomeScreen(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
-                    mainViewModel.refreshData(0)
-                    //mainViewModel.getFacilityAttractions()
-                   // mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
+                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
                 navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
@@ -59,9 +59,7 @@ fun AppNavGraph(
             PermissionsScreen(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
-                    mainViewModel.refreshData(0)
-                    //mainViewModel.getFacilityAttractions()
-                    //mainViewModel.getUserQueues(0)      //TODO: hardcoded user ID
+                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
                 onNavigateUp = { navController.popBackStack() })
@@ -134,6 +132,7 @@ fun AppNavGraph(
                     navController.navigate(ListDestination.route)
                 },
                 navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
+                navigateToTicket = { attractionId, userId -> navController.navigate("${TicketDestination.route}/$attractionId/$userId")},
                 mainViewModel = mainViewModel,
                 mainUiState = mainViewModel.mainUiState,
                 queuesUiState = mainViewModel.queuesUiState
@@ -162,6 +161,35 @@ fun AppNavGraph(
                    // attractionIdString = attractionId
                 )
            //}
+        }
+
+        composable(
+            route = TicketDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(TicketDestination.attractionId) {
+                    type = NavType.IntType
+                },
+                navArgument(TicketDestination.userId) {
+                    type = NavType.IntType
+                },
+            )
+        ) {backStackEntry ->
+            //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
+            //Log.i("ViewModel", "attractionId: ${attractionId}")
+            //if (attractionId != null) {
+            TicketScreen(
+                backStackEntry = backStackEntry,
+                onNavigateUp = {
+                    navController.navigate(QueuesDestination.route)
+                },
+                navigateToMap = {
+                    navController.navigate(MapDestination.route)
+                },
+                navigateToList = {
+                    navController.navigate(ListDestination.route)
+                },
+            )
+            //}
         }
     }
 }
