@@ -24,9 +24,13 @@ import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.time.Duration
@@ -77,9 +81,29 @@ class MainViewModel(
 
     private var isServiceStarted = false
 
+    // function that manages how long its been since auto refresh
+    // https://kotlinlang.org/docs/flow.html#flows-are-cold
+    private fun timerFlow(interval: Long): Flow<Unit> = flow {
+        while (true) {
+            emit(Unit) // Emit an item to trigger the action
+            delay(interval) // Wait for the next interval
+        }
+    }
+
+    fun startAutoRefresh(userId: Int) {
+        viewModelScope.launch {
+            // Emitting an event every 60 seconds
+            timerFlow(60_000).collectLatest {
+                Log.d("ViewModel", "auto refresh")
+                refreshData(userId)
+            }
+        }
+    }
+
 
     init{
         Log.i("ViewModel","MainViewModel Init")
+        startAutoRefresh(0)     //TODO: harcoded id
     }
 
     fun startServiceIfNotStarted(context: Context, userId: Int) {
@@ -103,7 +127,6 @@ class MainViewModel(
 
     fun refreshData(userId: Int){
         viewModelScope.launch {
-            requestsRepository.testFunction()
             //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
             val attractionsDeferred = async{ getFacilityAttractions() }
             val queuesDeferred = async{ getUserQueues(userId) }

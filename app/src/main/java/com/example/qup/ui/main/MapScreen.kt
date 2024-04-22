@@ -101,7 +101,7 @@ fun MapScreen(
 
     //Starting the refresh service:
     LaunchedEffect(0) {     //TODO: hardcoded userId
-        mainViewModel.startServiceIfNotStarted(context,0)
+        //mainViewModel.startServiceIfNotStarted(context,0)
     }
 
     Scaffold(

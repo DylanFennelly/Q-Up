@@ -11,6 +11,6 @@ class QueueApplicationContainer : Application() {
     override fun onCreate(){
         super.onCreate()
         container = AppDataContainer()
-        requestsRepository = RequestsRepository(applicationContext)
+        requestsRepository = RequestsRepository(applicationContext, container.facilityRepository)
     }
 }
