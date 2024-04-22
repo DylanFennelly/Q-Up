@@ -89,6 +89,7 @@ fun HomeBody(
                 if (
                     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)  == PackageManager.PERMISSION_GRANTED
                     && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                    && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
                     ){
                     //sendNotification(context)
                     navigateToMap("SETU")//TODO: Change to use actual data, not raw string

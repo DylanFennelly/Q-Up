@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -94,6 +95,7 @@ fun PermissionsScreen(
                 if (
                     ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
                     && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                    && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
                     ) {
                     Log.d("Permissions", "Permission check on resume: GRANTED")
                     navigateToMap("SETU")
@@ -188,17 +190,17 @@ fun PermissionsBody(
             modifier = Modifier.padding(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = stringResource(id = R.string.permissions_notification_title),
+                painter = painterResource(id = R.drawable.photo_camera_24px),
+                contentDescription = stringResource(id = R.string.permissions_camera_title),
                 modifier = Modifier.padding(end = 16.dp)
             )
             Column {
                 Text(
-                    text = stringResource(id = R.string.permissions_notification_title),
+                    text = stringResource(id = R.string.permissions_camera_title),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = stringResource(id = R.string.permissions_notification_desc),
+                    text = stringResource(id = R.string.permissions_camera_desc),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -261,16 +263,18 @@ fun checkAllPermissions(context: Context, requestMultiplePermissionsLauncher:  M
     val requiredPermissions = arrayOf(
         Manifest.permission.POST_NOTIFICATIONS,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.CAMERA
     )
 
     val isNotificationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
     //Granted either Fine or Coarse location
     val isLocationPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val isCameraPermissionGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
 
     //if one of the permissions is missing
-    if (!isNotificationPermissionGranted || !isLocationPermissionGranted) {
+    if (!isNotificationPermissionGranted || !isLocationPermissionGranted || !isCameraPermissionGranted ) {
         // only requesting permissions that have not been granted yet
         // filtering granted permissions out of the permissions array
         val permissionsToRequest = requiredPermissions.filter { ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED }.toTypedArray()

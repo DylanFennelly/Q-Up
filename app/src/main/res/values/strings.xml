@@ -50,6 +50,8 @@
     <string name="permissions_notification_desc">Q-Up sends notifications with updates about queues and queue times.</string>
     <string name="permissions_Location_title">Location</string>
     <string name="permissions_Location_desc">Q-Up uses your location to calculate when to send you notifications to start moving towards an attraction. Both "Precise" and "Broad" location are permitted, but for best functionality, select "Precise". </string>
+    <string name="permissions_camera_title">Camera</string>
+    <string name="permissions_camera_desc">Q-Up needs to use the camera to scan your ticket. The camera is only used for scanning the ticket.</string>
     <string name="permissions_ask">Please press the button below and allow all permissions to continue to the application.</string>
     <string name="permissions_button">Check Permissions</string>
     <string name="permissions_denied">Permissions Denied</string>
