@@ -74,7 +74,6 @@ fun QueuesScreen(
     navigateToAttraction: (Int) -> Unit,
     navigateToTicket: (Int, Int) -> Unit,
     mainViewModel: MainViewModel,
-    facilityName: String,
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState
 ) {

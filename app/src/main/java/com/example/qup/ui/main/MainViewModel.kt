@@ -59,7 +59,6 @@ sealed interface JoinQueueUiState {
 }
 
 class MainViewModel(
-    private val savedStateHandle: SavedStateHandle,
     private val facilityRepository: FacilityRepository,
     private val appContext: Context,
     private val requestsRepository: RequestsRepository,
@@ -143,15 +142,6 @@ class MainViewModel(
             context.startService(serviceIntent)
             isServiceStarted = true
         }
-    }
-
-    fun getFacilityName(): String{
-        // get value from savedStateHandle
-        return checkNotNull(savedStateHandle["facilityName"])
-    }
-
-    fun setFacilityName(facilityName : String){
-        savedStateHandle["facilityName"] = facilityName
     }
 
     fun refreshData(userId: Int){

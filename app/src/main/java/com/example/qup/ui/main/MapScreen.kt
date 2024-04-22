@@ -88,7 +88,6 @@ fun MapScreen(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
     navController: NavController = rememberNavController(),
-    facilityName: String,
     mapLatLng: LatLng,
     mapZoom: Float,
     mainUiState: MainUiState,

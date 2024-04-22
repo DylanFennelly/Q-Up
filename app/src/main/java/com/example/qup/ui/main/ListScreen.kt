@@ -65,7 +65,6 @@ fun ListScreen(
     navigateToQueues: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
-    facilityName: String,
     listUiState: MainUiState,
     queuesUiState: QueuesUiState
 ){

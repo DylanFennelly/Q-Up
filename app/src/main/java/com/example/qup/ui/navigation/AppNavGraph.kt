@@ -49,7 +49,6 @@ fun AppNavGraph(
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToMap = {
-                    mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
 
@@ -68,7 +67,6 @@ fun AppNavGraph(
                     navController.navigate(HomeDestination.route)
                 },
                 navigateToMap = {
-                    mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
@@ -79,7 +77,6 @@ fun AppNavGraph(
         composable(route = PermissionsDestination.route) {
             PermissionsScreen(
                 navigateToMap = {
-                    mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
@@ -101,7 +98,6 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(HomeDestination.route)
                 },
-                facilityName = mainViewModel.getFacilityName(),
                 mapLatLng = mapLocation,
                 mapZoom = mapZoom,
                 navigateToList = {
@@ -127,7 +123,6 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(MapDestination.route)
                 },
-                facilityName = mainViewModel.getFacilityName(),
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
@@ -149,7 +144,6 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(MapDestination.route)
                 },
-                facilityName = mainViewModel.getFacilityName(),
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },

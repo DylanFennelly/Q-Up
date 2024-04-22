@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +35,8 @@ import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 object HomeDestination: NavigationDestination{
     override val route = "home"
@@ -45,7 +48,7 @@ object HomeDestination: NavigationDestination{
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
-    navigateToMap: (String) -> Unit,
+    navigateToMap: () -> Unit,
     navigateToPermissions: () -> Unit,
     navigateToCamera: () -> Unit,
     modifier: Modifier = Modifier,
@@ -68,12 +71,13 @@ fun HomeScreen(
 
 @Composable
 fun HomeBody(
-    navigateToMap: (String) -> Unit,
+    navigateToMap: () -> Unit,
     navigateToPermissions: () -> Unit,
     navigateToCamera: () -> Unit,
     mainViewModel: MainViewModel
 ){
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -98,9 +102,14 @@ fun HomeBody(
                     && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                     && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
                     ){
-
-                    navigateToCamera()
-                    //navigateToMap("SETU")//TODO: Change to use actual data, not raw string
+                    scope.launch {
+                        val userId = mainViewModel.userId.firstOrNull() ?: -1
+                        if (userId == -1) {
+                            navigateToCamera()
+                        }else{
+                            navigateToMap()
+                        }
+                    }
                 }else{
                     navigateToPermissions()
                 }

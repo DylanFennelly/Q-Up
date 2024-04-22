@@ -53,6 +53,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -69,7 +70,7 @@ object CameraDestination: NavigationDestination {
 fun CameraScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
-    navigateToMap: (String) -> Unit,
+    navigateToMap: () -> Unit,
     mainViewModel: MainViewModel,
     cameraViewModel: CameraViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
@@ -116,18 +117,59 @@ fun CameraScreen(
                                 mapLng = userIdResult.body.mapLng
                             )
 
-                            mainViewModel.isDataUpdated.collect { isUpdated ->
-                                if (isUpdated) {
-                                    Log.i("CameraViewModel", "UserId: ${mainViewModel.facilityName.first()}")
-                                    Log.i("CameraViewModel", "Facility Name: ${mainViewModel.userId.first()}")
-                                    Log.i("CameraViewModel", "Base URL: ${mainViewModel.baseUrl.first()}")
-                                    Log.i("CameraViewModel", "MapLat: ${mainViewModel.mapLat.first()}")
-                                    Log.i("CameraViewModel", "MapLng: ${mainViewModel.mapLng.first()}")
+                            var attempts = 0
+                            while (attempts < 5) {
+                                val facilityName = mainViewModel.facilityName.first()
+                                val userId = mainViewModel.userId.first()
+                                val baseUrl = mainViewModel.baseUrl.first()
+                                val mapLat = mainViewModel.mapLat.first()
+                                val mapLng = mainViewModel.mapLng.first()
+                                Log.i("CameraViewModel", "UserId: ${facilityName}")
+                                Log.i("CameraViewModel", "Facility Name: ${userId}")
+                                Log.i("CameraViewModel", "Base URL: ${baseUrl}")
+                                Log.i("CameraViewModel", "MapLat: ${mapLat}")
+                                Log.i("CameraViewModel", "MapLng: ${mapLng}")
+
+
+                                //Datastore can be slow to update - ensuring data has been updated and looping until it has
+
+                                if (userId == userIdResult.body.userId &&
+                                    facilityName == userIdResult.body.facilityName &&
+                                    baseUrl == userIdResult.body.baseUrl &&
+                                    mapLat == userIdResult.body.mapLat &&
+                                    mapLng == userIdResult.body.mapLng
+                                ) {
+                                    Log.i(
+                                        "CameraViewModel",
+                                        "UserId: ${mainViewModel.facilityName.first()}"
+                                    )
+                                    Log.i(
+                                        "CameraViewModel",
+                                        "Facility Name: ${mainViewModel.userId.first()}"
+                                    )
+                                    Log.i(
+                                        "CameraViewModel",
+                                        "Base URL: ${mainViewModel.baseUrl.first()}"
+                                    )
+                                    Log.i(
+                                        "CameraViewModel",
+                                        "MapLat: ${mainViewModel.mapLat.first()}"
+                                    )
+                                    Log.i(
+                                        "CameraViewModel",
+                                        "MapLng: ${mainViewModel.mapLng.first()}"
+                                    )
 
                                     Log.i("CameraViewModel", "Beginning Nav")
-                                    navigateToMap(mainViewModel.facilityName.first())
+                                    navigateToMap()
+                                    attempts = 5        //break the loop
+                                } else {
+                                    Log.i("CameraViewModel", "Data not updated in time.")
+                                    attempts++
+                                    delay(1000L)    //wait 1 sec before trying again
                                 }
                             }
+
                         }
                     }
 
