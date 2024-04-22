@@ -15,14 +15,18 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,13 +35,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -58,6 +65,7 @@ fun CameraScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     navigateToMap: (String) -> Unit,
+    cameraViewModel: CameraViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -72,14 +80,44 @@ fun CameraScreen(
         },
     ) {  innerPadding ->
         Box {
-            QRScanner(
-                navigateToMap =  navigateToMap,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-            )
+            when(cameraViewModel.cameraUiState) {
+                is CameraUiState.Idle -> {
+                    QRScanner(
+                        cameraViewModel = cameraViewModel,
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    )
+                }
+                is CameraUiState.Success -> {
+                    Log.i("CameraViewModel", "UIState Success")
+                    val userIdResult = (cameraViewModel.cameraUiState as CameraUiState.Success).userIdResult
+                    Log.i("CameraViewModel", "userIdResult: $userIdResult")
+
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        Text(text = userIdResult.statusCode.toString())
+                        Text(text = userIdResult.body.message.toString())
+                        Text(text = userIdResult.body.userId.toString())
+                    }
+
+                }
+                is CameraUiState.Loading -> {
+                    Log.i("CameraViewModel", "UIState Loading")
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        RequestLoading()
+                    }
+                }
+                is CameraUiState.Error -> {
+                    Log.i("CameraViewModel", "UIState Error")
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        (cameraViewModel.cameraUiState as CameraUiState.Error).code?.let {
+                            RequestError(errorCode = it)
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -89,7 +127,7 @@ fun CameraScreen(
 @Composable
 fun QRScanner(
     modifier: Modifier = Modifier,
-    navigateToMap: (String) -> Unit,
+    cameraViewModel: CameraViewModel
 ){
     Column(
         modifier = modifier
@@ -133,7 +171,7 @@ fun QRScanner(
                                         "QR Code detected: $qrCodeContent",
                                         Toast.LENGTH_LONG
                                     ).show()
-                                    navigateToMap("SETU")
+                                    cameraViewModel.getUserId(qrCodeContent)
                                 })
                             }
 
@@ -166,6 +204,77 @@ fun QRScanner(
     }
 
 
+}
+
+@Composable
+fun RequestError(
+    errorCode: Int,
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        when (errorCode) {
+            460 -> {        //Ticket is not active yet (starttime not reached)
+                Icon(imageVector = Icons.Default.Warning, contentDescription = stringResource(id = R.string.generic_error), modifier = Modifier.size(128.dp))
+                Text(
+                    text = stringResource(id = R.string.ticket_error_460),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            461 -> {        //Ticket expired
+                Icon(imageVector = Icons.Default.Warning, contentDescription = stringResource(id = R.string.generic_error), modifier = Modifier.size(128.dp))
+                Text(
+                    text = stringResource(id = R.string.ticket_error_461),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            462 -> {        //Already activate
+                Icon(imageVector = Icons.Default.Warning, contentDescription = stringResource(id = R.string.generic_error), modifier = Modifier.size(128.dp))
+                Text(
+                    text = stringResource(id = R.string.ticket_error_462),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            else -> { //misc errors
+                Icon(imageVector = Icons.Default.Warning, contentDescription = stringResource(id = R.string.generic_error), modifier = Modifier.size(128.dp))
+                Text(
+                    text = stringResource(id = R.string.ticket_error_misc),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RequestLoading(
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.width(64.dp),
+            color = colorResource(id = R.color.baby_blue),
+            trackColor = colorResource(id = R.color.light_baby_blue),
+        )
+    }
 }
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)

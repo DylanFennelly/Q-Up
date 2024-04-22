@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.qup.app.QueueApplicationContainer
 import com.example.qup.ui.attraction.AttractionViewModel
+import com.example.qup.ui.camera.CameraViewModel
 import com.example.qup.ui.home.HomeViewModel
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.ticket.TicketViewModel
@@ -36,6 +37,11 @@ object AppViewModelProvider{
             TicketViewModel(
                 queueApplicationContainer().container.facilityRepository,
                 queueApplicationContainer().container.baseUrl
+            )
+        }
+        initializer {
+            CameraViewModel(
+                queueApplicationContainer().container.facilityRepository
             )
         }
     }

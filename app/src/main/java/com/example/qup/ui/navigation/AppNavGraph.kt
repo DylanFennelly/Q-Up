@@ -191,9 +191,6 @@ fun AppNavGraph(
                 },
             )
         ) {backStackEntry ->
-            //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
-            //Log.i("ViewModel", "attractionId: ${attractionId}")
-            //if (attractionId != null) {
             TicketScreen(
                 backStackEntry = backStackEntry,
                 onNavigateUp = {
@@ -206,7 +203,6 @@ fun AppNavGraph(
                     navController.navigate(ListDestination.route)
                 },
             )
-            //}
         }
     }
 }

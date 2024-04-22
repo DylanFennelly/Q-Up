@@ -32,3 +32,19 @@ data class UpdateCallNumApiResponse (
     val statusCode: Int,
     val body: String
 )
+
+@Serializable
+data class UserIdResponseBody (
+    val message: String,
+    val userId: Int,
+    val facilityName: String,
+    val baseUrl: String,
+    val mapLat: Double,
+    val mapLng: Double
+)
+
+@Serializable
+data class UserIdApiResponse (
+    val statusCode: Int,
+    val body: UserIdResponseBody
+)

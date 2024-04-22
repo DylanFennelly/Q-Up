@@ -63,5 +63,10 @@
     <string name="entrance_ticket_title">Entrance Ticket</string>
     <string name="camera_title">Scan Code</string>
     <string name="camera_top">Scan the QR Code provided by the facility at entry or as part of your ticket to continue.</string>
+    <string name="generic_error">Something went wrong.</string>
+    <string name="ticket_error_460">This ticket is not active yet. Confirm the entry time in your booking and request assistance from facility staff if required.</string>
+    <string name="ticket_error_461">This ticket has expired. If you believe this to be an error, request assistance from facility staff.</string>
+    <string name="ticket_error_462">This ticket has already been activated. If you believe this to be an error, request assistance from facility staff.</string>
+    <string name="ticket_error_misc">Something went wrong. Exit this screen and try scanning your code again. If issues persist, request assistance from facility staff.</string>
 
 </resources>

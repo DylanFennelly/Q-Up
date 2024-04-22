@@ -6,6 +6,8 @@ import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
 import com.example.qup.data.UpdateCallNumApiResponse
 import com.example.qup.data.UpdateCallNumBody
+import com.example.qup.data.UserIdApiResponse
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -33,4 +35,8 @@ interface FacilityApiService{
 
     @PUT
     suspend fun updateQueueCallNum(@Url url: String, @Body body: UpdateCallNumBody): UpdateCallNumApiResponse
+
+    //Query param is included as part of QR code
+    @GET
+    suspend fun getUserId(@Url url: String): Response<UserIdApiResponse>
 }
