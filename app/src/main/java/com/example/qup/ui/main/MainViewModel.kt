@@ -61,6 +61,7 @@ class MainViewModel(
     private val facilityRepository: FacilityRepository,
     private val appContext: Context,
     private val requestsRepository: RequestsRepository,
+    val baseUrl: String
 ): ViewModel() {
 
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
@@ -91,11 +92,15 @@ class MainViewModel(
     }
 
     fun startAutoRefresh(userId: Int) {
+        val test = true
         viewModelScope.launch {
             // Emitting an event every 60 seconds
             timerFlow(60_000).collectLatest {
-                Log.d("ViewModel", "auto refresh")
-                refreshData(userId)
+                Log.d("ViewModel", "timer flow 60 seconds")
+                if (test) {     //TODO: check to see if user has entered facility yet (datastore url and userid set)
+                    Log.d("ViewModel", "auto refresh")
+                    refreshData(userId)
+                }
             }
         }
     }
@@ -341,7 +346,7 @@ class MainViewModel(
         Log.i("ViewModel","Starting API request")
         mainUiState = try {
             Log.i("ViewModel", "Starting coroutine")
-            val listResult = facilityRepository.getAttractions()
+            val listResult = facilityRepository.getAttractions(baseUrl + "test-data")
             Log.i("ViewModel", "API result: $listResult.attractionList")
             MainUiState.Success(listResult.body)
         }catch (e: IOException){
@@ -356,7 +361,7 @@ class MainViewModel(
 
         queuesUiState = try {
             Log.i("ViewModel", "Starting getUserQueues coroutine")
-            val queuesResult = facilityRepository.getUserQueues(userId)
+            val queuesResult = facilityRepository.getUserQueues(baseUrl + "user-queues", userId)
             Log.i("ViewModel", "API result: ${queuesResult}")
             QueuesUiState.Success(queuesResult)
         }catch (e: IOException){
@@ -370,7 +375,7 @@ class MainViewModel(
         viewModelScope.launch {
             joinQueueUiState = try {
                 Log.i("ViewModel","Starting coroutine")
-                val joinResult = facilityRepository.joinQueue(body = JoinLeaveQueueBody(attractionId, userId))
+                val joinResult = facilityRepository.joinQueue(url = baseUrl + "join-queue" ,body = JoinLeaveQueueBody(attractionId, userId))
                 Log.i("ViewModel", "API result: $joinResult")
                 JoinQueueUiState.Result(joinResult.statusCode)
             }catch (e: IOException) {
@@ -385,7 +390,7 @@ class MainViewModel(
         viewModelScope.launch {
             joinQueueUiState = try {
                 Log.i("ViewModel","Starting coroutine")
-                val leaveResult = facilityRepository.leaveQueue(body = JoinLeaveQueueBody(attractionId, userId))
+                val leaveResult = facilityRepository.leaveQueue(url = baseUrl + "leave-queue", body = JoinLeaveQueueBody(attractionId, userId))
                 Log.i("ViewModel", "API result: $leaveResult")
                 JoinQueueUiState.Result(leaveResult.statusCode)
             }catch (e: IOException) {
@@ -400,7 +405,7 @@ class MainViewModel(
         viewModelScope.launch {
             try {
                 Log.i("ViewModel","Starting coroutine")
-                val updateResult = facilityRepository.updateQueueCallNum(body = UpdateCallNumBody(attractionId, userId, callNum))
+                val updateResult = facilityRepository.updateQueueCallNum(url = baseUrl + "update-queue", body = UpdateCallNumBody(attractionId, userId, callNum))
                 Log.i("ViewModel", "API result: $updateResult")
             }catch (e: IOException) {
                 Log.e("ViewModel", "Error on API Call: $e")

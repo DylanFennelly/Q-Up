@@ -37,7 +37,7 @@ class TicketViewModel(
         viewModelScope.launch {
             ticketUiState = try {
                 Log.i("TicketViewModel", "Starting coroutine")
-                val queuesResult = facilityRepository.getUserQueues(userId)
+                val queuesResult = facilityRepository.getUserQueues(baseUrl + "user-queues", userId)
                 val validQueue = queuesResult.find { it.attractionId == attractionId && it.callNum != 5 }
 
                 //if linked matching attraction ID is found and ticket is not invalidated

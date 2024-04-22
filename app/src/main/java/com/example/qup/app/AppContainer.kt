@@ -30,7 +30,7 @@ class AppDataContainer: AppContainer{
 
     private val retrofit = Retrofit.Builder()
         .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-        .baseUrl(baseTestUrl)
+        .baseUrl("https://default-url.com")
         .client(httpClient)
         .build()
 

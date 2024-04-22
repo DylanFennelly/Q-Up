@@ -11,24 +11,26 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 //Handles API calls
 interface FacilityApiService{
-    @GET("test-data")
-    suspend fun getAttractions(): GetAttractionsApiResponse
+    //allowing url to change after init: https://stackoverflow.com/questions/32559333/retrofit-2-dynamic-url
+    @GET
+    suspend fun getAttractions(@Url url: String): GetAttractionsApiResponse
 
-    @POST("join-queue")
-    suspend fun joinQueue(@Body body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
+    @POST
+    suspend fun joinQueue(@Url url: String, @Body body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
 
     //query params: https://stackoverflow.com/questions/36730086/retrofit-2-url-query-parameter
     //query does not have a body -> returns list directly
-    @GET("user-queues")
-    suspend fun getUserQueues(@Query("userId") userId: Int): List<QueueEntry>
+    @GET
+    suspend fun getUserQueues(@Url url: String, @Query("userId") userId: Int): List<QueueEntry>
 
     //body and API response have same structure
-    @POST("leave-queue")
-    suspend fun leaveQueue(@Body body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
+    @POST
+    suspend fun leaveQueue(@Url url: String, @Body body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
 
-    @PUT("update-queue")
-    suspend fun updateQueueCallNum(@Body body: UpdateCallNumBody): UpdateCallNumApiResponse
+    @PUT
+    suspend fun updateQueueCallNum(@Url url: String, @Body body: UpdateCallNumBody): UpdateCallNumApiResponse
 }

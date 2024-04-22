@@ -138,12 +138,12 @@ fun TicketBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "This is your entrance ticket.",
+            text = "This is your entrance ticket",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom =  16.dp)
         )
         Text(
-            text = "Present this ticket at the attraction entry to gain entry.",
+            text = "Present this ticket at the attraction entrance to gain entry.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom =  16.dp)
