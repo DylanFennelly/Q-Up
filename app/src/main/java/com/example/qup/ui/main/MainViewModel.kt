@@ -21,6 +21,7 @@ import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
 import com.example.qup.data.RequestsRepository
 import com.example.qup.data.UpdateCallNumBody
+import com.example.qup.data.UserRepository
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
 import kotlinx.coroutines.async
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -64,6 +66,14 @@ class MainViewModel(
     val baseUrl: String
 ): ViewModel() {
 
+    val userRepository = UserRepository(appContext, viewModelScope)
+
+    val userId: Flow<Int> = userRepository.userId.catch { emit(-1) }    //default value
+    val facilityName: Flow<String> = userRepository.facilityName.catch { emit("") }
+    val baseUrl2: Flow<String> = userRepository.baseUrl.catch { emit("https://failed.com/") }
+    val mapLat: Flow<Double> = userRepository.mapLat.catch { emit(0.0) }
+    val mapLng: Flow<Double> = userRepository.mapLng.catch { emit(0.0) }
+
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
         private set
 
@@ -81,6 +91,16 @@ class MainViewModel(
         get() = _isRefreshing.asStateFlow()
 
     private var isServiceStarted = false
+
+    init{
+        Log.i("ViewModel","MainViewModel Init")
+        startAutoRefresh(0)     //TODO: harcoded id
+    }
+
+    suspend fun saveUserData(userId:Int, facilityName:String, baseUrl:String, mapLat:Double, mapLng:Double){
+        userRepository.saveExampleData(userId, facilityName, baseUrl, mapLat, mapLng)
+    }
+
 
     // function that manages how long its been since auto refresh
     // https://kotlinlang.org/docs/flow.html#flows-are-cold
@@ -105,11 +125,6 @@ class MainViewModel(
         }
     }
 
-
-    init{
-        Log.i("ViewModel","MainViewModel Init")
-        startAutoRefresh(0)     //TODO: harcoded id
-    }
 
     fun startServiceIfNotStarted(context: Context, userId: Int) {
         if (!isServiceStarted) {
