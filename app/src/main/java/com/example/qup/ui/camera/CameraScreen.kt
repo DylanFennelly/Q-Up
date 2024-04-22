@@ -32,6 +32,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -45,11 +47,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 
@@ -65,9 +70,11 @@ fun CameraScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     navigateToMap: (String) -> Unit,
+    mainViewModel: MainViewModel,
     cameraViewModel: CameraViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier,
@@ -96,11 +103,35 @@ fun CameraScreen(
                     val userIdResult = (cameraViewModel.cameraUiState as CameraUiState.Success).userIdResult
                     Log.i("CameraViewModel", "userIdResult: $userIdResult")
 
-                    Column(modifier = Modifier.padding(innerPadding)) {
-                        Text(text = userIdResult.statusCode.toString())
-                        Text(text = userIdResult.body.message.toString())
-                        Text(text = userIdResult.body.userId.toString())
+                    RequestLoading()
+
+                    LaunchedEffect(userIdResult) {
+                        scope.launch {
+                            mainViewModel.resetUpdateFlag()
+                            mainViewModel.saveUserData(
+                                userId = userIdResult.body.userId,
+                                facilityName = userIdResult.body.facilityName,
+                                baseUrl = userIdResult.body.baseUrl,
+                                mapLat = userIdResult.body.mapLat,
+                                mapLng = userIdResult.body.mapLng
+                            )
+
+                            mainViewModel.isDataUpdated.collect { isUpdated ->
+                                if (isUpdated) {
+                                    Log.i("CameraViewModel", "UserId: ${mainViewModel.facilityName.first()}")
+                                    Log.i("CameraViewModel", "Facility Name: ${mainViewModel.userId.first()}")
+                                    Log.i("CameraViewModel", "Base URL: ${mainViewModel.baseUrl.first()}")
+                                    Log.i("CameraViewModel", "MapLat: ${mainViewModel.mapLat.first()}")
+                                    Log.i("CameraViewModel", "MapLng: ${mainViewModel.mapLng.first()}")
+
+                                    Log.i("CameraViewModel", "Beginning Nav")
+                                    navigateToMap(mainViewModel.facilityName.first())
+                                }
+                            }
+                        }
                     }
+
+
 
                 }
                 is CameraUiState.Loading -> {

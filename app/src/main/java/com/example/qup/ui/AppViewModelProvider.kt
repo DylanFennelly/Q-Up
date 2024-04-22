@@ -24,7 +24,6 @@ object AppViewModelProvider{
                 queueApplicationContainer().container.facilityRepository,
                 queueApplicationContainer().applicationContext,  //passing context for notifications
                 queueApplicationContainer().requestsRepository,
-                queueApplicationContainer().container.baseUrl
             )
         }
         initializer {

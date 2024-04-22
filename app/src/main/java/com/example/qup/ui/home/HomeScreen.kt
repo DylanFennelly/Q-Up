@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qup.R
 import com.example.qup.helpers.sendNotification
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
 
@@ -46,7 +47,9 @@ object HomeDestination: NavigationDestination{
 fun HomeScreen(
     navigateToMap: (String) -> Unit,
     navigateToPermissions: () -> Unit,
+    navigateToCamera: () -> Unit,
     modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     Scaffold(
@@ -55,7 +58,9 @@ fun HomeScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             HomeBody(
                 navigateToMap,
-                navigateToPermissions
+                navigateToPermissions,
+                navigateToCamera,
+                mainViewModel
             )
         }
     }
@@ -64,7 +69,9 @@ fun HomeScreen(
 @Composable
 fun HomeBody(
     navigateToMap: (String) -> Unit,
-    navigateToPermissions: () -> Unit
+    navigateToPermissions: () -> Unit,
+    navigateToCamera: () -> Unit,
+    mainViewModel: MainViewModel
 ){
     val context = LocalContext.current
 
@@ -91,8 +98,9 @@ fun HomeBody(
                     && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                     && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
                     ){
-                    //sendNotification(context)
-                    navigateToMap("SETU")//TODO: Change to use actual data, not raw string
+
+                    navigateToCamera()
+                    //navigateToMap("SETU")//TODO: Change to use actual data, not raw string
                 }else{
                     navigateToPermissions()
                 }

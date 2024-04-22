@@ -36,7 +36,6 @@ class CameraViewModel(
             cameraUiState = try {
                 Log.i("CameraViewModel", "Starting coroutine")
                 val userIdResult = facilityRepository.getUserId(url)
-                Log.i("CameraViewModel", "userIdResult: $userIdResult")
                 CameraUiState.Success(userIdResult)
             }catch (e: ApiException){
                 CameraUiState.Error(e.message, e.code)

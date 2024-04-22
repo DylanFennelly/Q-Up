@@ -22,6 +22,7 @@ class NetworkFacilityRepository(private val facilityApiService: FacilityApiServi
     override suspend fun getUserQueues(url: String, userId: Int): List<QueueEntry>  = facilityApiService.getUserQueues(url, userId)
     override suspend fun leaveQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse  = facilityApiService.leaveQueue(url, body)
     override suspend fun updateQueueCallNum(url: String, body: UpdateCallNumBody): UpdateCallNumApiResponse = facilityApiService.updateQueueCallNum(url, body)
+    //Generative AI Usage 7.
     override suspend fun getUserId(url: String): UserIdApiResponse {
         val response = facilityApiService.getUserId(url)
         if (response.isSuccessful) {

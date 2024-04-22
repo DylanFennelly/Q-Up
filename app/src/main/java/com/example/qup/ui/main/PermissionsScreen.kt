@@ -66,6 +66,8 @@ fun PermissionsScreen(
     canNavigateBack: Boolean = true,
     navigateToMap: (String) -> Unit,
     onNavigateUp: () -> Unit,
+    navigateToCamera: () -> Unit,
+    mainViewModel: MainViewModel,
 ){
     val context = LocalContext.current
     val showDeniedDialogState = remember { mutableStateOf(false) }
@@ -79,7 +81,8 @@ fun PermissionsScreen(
     ) { permissions ->
         if (permissions.all { it.value }) {
             Log.d("Permissions", "All permissions granted")
-            navigateToMap("SETU")
+            //navigateToMap("SETU")
+            navigateToCamera()
         } else {
             showDeniedDialogState.value = true
         }

@@ -51,10 +51,14 @@ fun AppNavGraph(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
-                    //navController.navigate(MapDestination.route)
+                    navController.navigate(MapDestination.route)
+
+                },
+                navigateToCamera = {
                     navController.navigate(CameraDestination.route)
                 },
-                navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
+                navigateToPermissions = {navController.navigate(PermissionsDestination.route)},
+                mainViewModel = mainViewModel
             )
         }
 
@@ -68,6 +72,7 @@ fun AppNavGraph(
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
                 },
+                mainViewModel = mainViewModel
             )
         }
 
@@ -76,9 +81,12 @@ fun AppNavGraph(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
-                    //navController.navigate(MapDestination.route)
+                    navController.navigate(MapDestination.route)
+                },
+                navigateToCamera = {
                     navController.navigate(CameraDestination.route)
                 },
+                mainViewModel = mainViewModel,
                 onNavigateUp = { navController.popBackStack() })
         }
 
