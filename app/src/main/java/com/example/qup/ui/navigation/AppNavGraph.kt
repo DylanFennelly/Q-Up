@@ -16,6 +16,8 @@ import com.example.qup.ui.home.HomeDestination
 import com.example.qup.ui.home.HomeScreen
 import com.example.qup.ui.attraction.AttractionDestination
 import com.example.qup.ui.attraction.AttractionScreen
+import com.example.qup.ui.camera.CameraDestination
+import com.example.qup.ui.camera.CameraScreen
 import com.example.qup.ui.main.ListDestination
 import com.example.qup.ui.main.ListScreen
 import com.example.qup.ui.main.MainViewModel
@@ -49,9 +51,23 @@ fun AppNavGraph(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
-                    navController.navigate(MapDestination.route)
+                    //navController.navigate(MapDestination.route)
+                    navController.navigate(CameraDestination.route)
                 },
                 navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
+            )
+        }
+
+        composable(route = CameraDestination.route) {
+            CameraScreen(
+                onNavigateUp = {
+                    navController.navigate(HomeDestination.route)
+                },
+                navigateToMap = {
+                    mainViewModel.setFacilityName(it)
+                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    navController.navigate(MapDestination.route)
+                },
             )
         }
 
@@ -60,7 +76,8 @@ fun AppNavGraph(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
                     mainViewModel.refreshData(0) //TODO: hardcoded user ID
-                    navController.navigate(MapDestination.route)
+                    //navController.navigate(MapDestination.route)
+                    navController.navigate(CameraDestination.route)
                 },
                 onNavigateUp = { navController.popBackStack() })
         }

@@ -61,4 +61,7 @@
     <string name="entrance_ticket_expired">Entrance ticket expired</string>
     <string name="entrance_ticket_button">View Entrance Ticket</string>
     <string name="entrance_ticket_title">Entrance Ticket</string>
+    <string name="camera_title">Scan Code</string>
+    <string name="camera_top">Scan the QR Code provided by the facility at entry or as part of your ticket to continue.</string>
+
 </resources>

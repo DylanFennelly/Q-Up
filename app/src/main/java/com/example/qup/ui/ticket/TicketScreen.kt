@@ -133,7 +133,7 @@ fun TicketBody(
 
     ){
     Column(
-        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 32.dp, top = 24.dp),
+        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
