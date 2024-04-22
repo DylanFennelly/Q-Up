@@ -1,6 +1,8 @@
 package com.example.qup.ui.navigation
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -19,10 +21,17 @@ import com.example.qup.ui.main.ListScreen
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.MapDestination
 import com.example.qup.ui.main.MapScreen
+import com.example.qup.ui.main.PermissionsDestination
+import com.example.qup.ui.main.PermissionsScreen
+import com.example.qup.ui.main.QueuesDestination
+import com.example.qup.ui.main.QueuesScreen
+import com.example.qup.ui.ticket.TicketDestination
+import com.example.qup.ui.ticket.TicketScreen
 import com.google.android.gms.maps.model.LatLng
 
 //Defines navigation destinations for app views
 //NavGraph and NavigationDestination code reference: John Rellis, Lab-Room InventoryApp, Mobile App Development 1, South East Technological University
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
@@ -39,10 +48,21 @@ fun AppNavGraph(
             HomeScreen(
                 navigateToMap = {
                     mainViewModel.setFacilityName(it)
-                    mainViewModel.getFacilityAttractions()
+                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
                     navController.navigate(MapDestination.route)
-                }
+                },
+                navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
             )
+        }
+
+        composable(route = PermissionsDestination.route) {
+            PermissionsScreen(
+                navigateToMap = {
+                    mainViewModel.setFacilityName(it)
+                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    navController.navigate(MapDestination.route)
+                },
+                onNavigateUp = { navController.popBackStack() })
         }
 
         composable(
@@ -62,8 +82,12 @@ fun AppNavGraph(
                 navigateToList = {
                     navController.navigate(ListDestination.route)
                 },
+                navigateToQueues = {
+                    navController.navigate(QueuesDestination.route)
+                },
                 mainViewModel = mainViewModel,
                 mainUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState,
                 navigateToAttraction = {
                     navController.navigate("${AttractionDestination.route}/${it}")
                 }
@@ -82,12 +106,40 @@ fun AppNavGraph(
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
+                navigateToQueues = {
+                    navController.navigate(QueuesDestination.route)
+                },
                 navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
                 mainViewModel = mainViewModel,
-                listUiState = mainViewModel.mainUiState
+                listUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState
             )
 
         }
+
+        composable(
+            route = QueuesDestination.route,
+        ) {
+            QueuesScreen(
+                onNavigateUp = {
+                    navController.navigate(MapDestination.route)
+                },
+                facilityName = mainViewModel.getFacilityName(),
+                navigateToMap = {
+                    navController.navigate(MapDestination.route)
+                },
+                navigateToList = {
+                    navController.navigate(ListDestination.route)
+                },
+                navigateToAttraction = { navController.navigate("${AttractionDestination.route}/${it}") },
+                navigateToTicket = { attractionId, userId -> navController.navigate("${TicketDestination.route}/$attractionId/$userId")},
+                mainViewModel = mainViewModel,
+                mainUiState = mainViewModel.mainUiState,
+                queuesUiState = mainViewModel.queuesUiState
+            )
+
+        }
+
         composable(
             route = AttractionDestination.routeWithArgs,
             arguments = listOf(navArgument(AttractionDestination.attractionID) {
@@ -100,11 +152,44 @@ fun AppNavGraph(
                 AttractionScreen(
                     onNavigateUp = { navController.navigate(ListDestination.route) },
                     navigateToMap = { navController.navigate(MapDestination.route) },
+                    navigateToQueues = {
+                        navController.navigate(QueuesDestination.route)
+                    },
                     mainViewModel = mainViewModel,
                     attractionUiState = mainViewModel.mainUiState,
+                    queuesUiState = mainViewModel.queuesUiState,
                    // attractionIdString = attractionId
                 )
            //}
+        }
+
+        composable(
+            route = TicketDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(TicketDestination.attractionId) {
+                    type = NavType.IntType
+                },
+                navArgument(TicketDestination.userId) {
+                    type = NavType.IntType
+                },
+            )
+        ) {backStackEntry ->
+            //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
+            //Log.i("ViewModel", "attractionId: ${attractionId}")
+            //if (attractionId != null) {
+            TicketScreen(
+                backStackEntry = backStackEntry,
+                onNavigateUp = {
+                    navController.navigate(QueuesDestination.route)
+                },
+                navigateToMap = {
+                    navController.navigate(MapDestination.route)
+                },
+                navigateToList = {
+                    navController.navigate(ListDestination.route)
+                },
+            )
+            //}
         }
     }
 }

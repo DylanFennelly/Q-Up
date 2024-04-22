@@ -1,6 +1,8 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -8,9 +10,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -20,6 +29,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,17 +43,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.RefreshService
 import com.example.qup.data.Attraction
+import com.example.qup.data.QueueEntry
+import com.example.qup.helpers.calculateEstimatedQueueTime
+import com.example.qup.helpers.loadMapStyle
+import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MarkerInfoWindow
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -49,14 +73,17 @@ object MapDestination: NavigationDestination {
     override val titleRes = R.string.map_title
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MapScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     //navigateToMap: (String) -> Unit,
-    navigateToList: (String) -> Unit,
+    navigateToList: () -> Unit,
+    navigateToQueues: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
@@ -64,12 +91,19 @@ fun MapScreen(
     facilityName: String,
     mapLatLng: LatLng,
     mapZoom: Float,
-    mainUiState: MainUiState
+    mainUiState: MainUiState,
+    queuesUiState: QueuesUiState
 ){
-//    LaunchedEffect(facilityName){
-//        mainViewModel.getFacilityAttractions()
-//    }
-    //TODO: Add API refresh button
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    val context = LocalContext.current
+
+
+    //Starting the refresh service:
+    LaunchedEffect(0) {     //TODO: hardcoded userId
+        //mainViewModel.startServiceIfNotStarted(context,0)
+    }
+
     Scaffold(
         topBar = {
             QueueTopAppBar(
@@ -78,18 +112,33 @@ fun MapScreen(
                 navigateUp = onNavigateUp
             )
         },
-        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, navigateToList= {navigateToList(mainViewModel.getFacilityName())})}
+        bottomBar = { QueueBottomAppBar(listSelected = false, mapSelected = true, queuesSelected = false, navigateToList= {navigateToList()}, navigateToQueues = {navigateToQueues()})}
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .pullRefresh(pullRefreshState)
+        ) {
             when(mainUiState) {
                 is MainUiState.Loading -> MapLoading()
-                is MainUiState.Success -> MapBody(
-                    attractions = mainUiState.attractions,
-                    latLng = mapLatLng,
-                    zoom = mapZoom,
-                    onItemClick = navigateToAttraction
-                )
+                is MainUiState.Success -> {
+                    when (queuesUiState) {
+                        is QueuesUiState.Loading -> MapError()
+                        is QueuesUiState.Success -> {
+                            MapBody(
+                                attractions = mainUiState.attractions,
+                                queues = queuesUiState.userQueues,
+                                latLng = mapLatLng,
+                                zoom = mapZoom,
+                                onItemClick = navigateToAttraction
+                            )
+                        }
+                        is QueuesUiState.Error -> MapError()
+                    }
+                }
                 is MainUiState.Error -> MapError()
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
             }
         }
     }
@@ -97,6 +146,7 @@ fun MapScreen(
 @Composable
 fun MapBody(
     attractions: List<Attraction>,
+    queues: List<QueueEntry>,
     latLng: LatLng,
     zoom: Float,
     onItemClick: (Int) -> Unit
@@ -108,13 +158,17 @@ fun MapBody(
     val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
+    //MapStyle generated with: https://mapstyle.withgoogle.com/
+    val mapStyle: MapStyleOptions? = loadMapStyle(context)
 
     Column {
         GoogleMap(
             modifier = Modifier,
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(mapStyleOptions = mapStyle)
         ) {
             for (attraction in attractions) {
+                val linkedQueue = queues.find{it.attractionId == attraction.id}
                 //https://www.boltuix.com/2022/11/custom-info-window-on-map-marker-clicks.html
                 val attractionLatLng = LatLng(attraction.lat, attraction.lng)
                 MarkerInfoWindow(
@@ -133,22 +187,67 @@ fun MapBody(
                             modifier = Modifier.padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            //if the user is queued for this attraction:
+                            if (linkedQueue != null){
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier
+                                        .background(
+                                            color = colorResource(id = R.color.emerald_green),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.attraction_in_queue_label),
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colorResource(id = R.color.white)
+                                    )
+                                }
+                            }
                             Text(
                                 text = attraction.name,
                                 style = MaterialTheme.typography.titleLarge,
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            Text(
-                                text = "Status",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
-                            Text(
-                                text = attraction.status,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                                color = statusColor(staus = attraction.status)
-                            )
+
+                            // if attraction is open, display queue time -> else, display status (Maintenance/Closed)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                if (attraction.status == "Open"){
+                                    val queueTime = if (linkedQueue != null){
+                                        calculateEstimatedQueueTime(linkedQueue.aheadInQueue, attraction.avg_capacity, attraction.length)
+                                    }else{
+                                        calculateEstimatedQueueTime(attraction.in_queue, attraction.avg_capacity, attraction.length)
+                                    }
+                                    Text(
+                                        text = stringResource(id = R.string.attraction_queue_time_short_label),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
+                                    Text(
+                                        text = "$queueTime " + stringResource(id = R.string.attraction_queue_time_unit),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                        color = queueTimeColour(time = queueTime)
+                                    )
+                                }else{
+                                    Text(
+                                        text = stringResource(id = R.string.attraction_status_label),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
+                                    Text(
+                                        text = attraction.status,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                        color = statusColor(staus = attraction.status)
+                                    )
+                                }
+                            }
+
                             Button(
                                 onClick = { },
                                 colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.baby_blue))

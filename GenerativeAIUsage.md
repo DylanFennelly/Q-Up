@@ -426,3 +426,721 @@ composable(
 
 Make sure that the navArgument is correctly set for MapDestination.facility. This should allow the facilityName to be retrieved correctly in the MapScreen. If the issue persists, double-check the navigation setup and ensure that the arguments are being passed as expected.
 ```
+
+## Generative AI Usage 2.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help add custom styling to the GoogleMaps composable.
+
+#### Chat log:
+```
+User
+
+Using the GoogleMap composable, how can I hide street names on the map?
+
+
+ChatGPT
+
+To hide street names on a map using the Google Maps Composable in Jetpack Compose, you can utilize custom styling for the map. Google Maps allows you to customize the appearance of the map using a JSON style string, which can specify various features and elements to hide, show, or style differently.
+
+Here’s how you can achieve hiding street names on the map:
+
+    Create a JSON style string: You need to define a JSON style string that specifies hiding the street labels. Here’s an example of such a JSON string:
+
+json
+
+[
+  {
+    "featureType": "road",
+    "elementType": "labels",
+    "stylers": [
+      {"visibility": "off"}
+    ]
+  }
+]
+
+This JSON string targets all road labels and sets their visibility to "off".
+
+    Apply the style in your Composable: You can apply this style to your map using the GoogleMap composable from the Google Maps library for Android. Here's how you can integrate the style:
+
+kotlin
+
+import androidx.compose.runtime.Composable
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapStyleOptions
+import com.google.maps.android.compose.rememberCameraPositionState
+
+@Composable
+fun StyledMap() {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 12f) // Example coordinates
+    }
+
+    val jsonStyle = """
+        [
+          {
+            "featureType": "road",
+            "elementType": "labels",
+            "stylers": [
+              {"visibility": "off"}
+            ]
+          }
+        ]
+    """.trimIndent()
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(mapStyleOptions = MapStyleOptions(jsonStyle))
+    )
+    // You can add more composables or features to your map here
+}
+
+This code snippet demonstrates setting up a GoogleMap composable with a camera position and a custom map style that hides street names.
+
+Make sure to adjust the coordinates in CameraPosition.fromLatLngZoom to center the map according to your requirements. This approach provides a lot of flexibility, allowing you to customize different aspects of the map's appearance as desired.
+
+
+User
+
+Can I have the MapStyle as a .json file in the res directory?
+
+
+ChatGPT
+
+Yes, you can store your custom map styles in a .json file within the res directory of your Android project and then load this style into your Google Maps Composable. This method helps keep your code clean and makes it easier to manage or change the map style without modifying your Kotlin code directly.
+
+Here's how you can set this up:
+1. Create a JSON file with your style
+
+Create a JSON file in your project’s res/raw directory. For example, create a file named map_style.json inside res/raw and put your JSON style configuration there:
+
+json
+
+[
+  {
+    "featureType": "road",
+    "elementType": "labels",
+    "stylers": [
+      {"visibility": "off"}
+    ]
+  }
+]
+
+2. Load the JSON file in your Composable
+
+You can read this file in your Jetpack Compose function and apply it to the map. Here’s how to do it:
+
+kotlin
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapStyleOptions
+import com.google.maps.android.compose.rememberCameraPositionState
+import java.io.InputStream
+
+@Composable
+fun StyledMap() {
+    val context = LocalContext.current
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 12f) // Example coordinates
+    }
+
+    val mapStyleOptions: MapStyleOptions? = loadMapStyle(context)
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(mapStyleOptions = mapStyleOptions)
+    )
+}
+
+fun loadMapStyle(context: Context): MapStyleOptions? {
+    return try {
+        val rawResourceStream: InputStream = context.resources.openRawResource(R.raw.map_style)
+        val bytes = rawResourceStream.readBytes()
+        val jsonStyle = String(bytes)
+        MapStyleOptions(jsonStyle)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+In this example:
+
+    The JSON file is loaded from the res/raw directory using openRawResource(R.raw.map_style).
+    The loadMapStyle function reads the content of the JSON file into a string and constructs a MapStyleOptions object from it.
+    This MapStyleOptions is then applied to the GoogleMap composable.
+
+This approach not only makes the code cleaner but also simplifies modifications to the map's appearance, as changes to the style can be done directly in the JSON file without any adjustments to the Kotlin code.
+```
+## Generative AI Usage 3.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help with an issue regarding a type mismatch.
+
+#### Chat log:
+```
+User:
+
+I trying to ask for permissions in a Composable screen, PermissionsScreen, but I am getting the following error for checkNotificationPermission:
+"shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+            // Explain to user reason for permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+-> Type mismatch.
+Required:
+Activity
+Found:
+String
+No value passed for parameter 'permission'"
+
+This code was working in the apps MainActivity. This is the entire PermissionsScreen code:
+"package com.example.qup.ui.main
+
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.content.ContextCompat
+import com.example.qup.QueueTopAppBar
+import com.example.qup.R
+import com.example.qup.ui.navigation.NavigationDestination
+
+//Screen to explain and ask for permissions
+object PermissionsDestination: NavigationDestination {
+    override val route = "permissions"
+    override val titleRes = R.string.permissions_title
+}
+
+fun showPermissionDeniedDialog(context: Context) {
+    AlertDialog.Builder(context)
+        .setTitle("Permission Denied")
+        .setMessage("Notification permission was denied. Queue notifications will not be available. Re-open to app to allow permissions.")
+        .setPositiveButton("OK") { dialog, which -> dialog.dismiss() }
+        .create()
+        .show()
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkNotificationPermission(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+    when {
+        ContextCompat.checkSelfPermission(
+            context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {}
+
+        shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+            // Explain to user reason for permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        else -> {
+            // directly ask for the permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun PermissionsScreen(
+    modifier: Modifier = Modifier,
+    canNavigateBack: Boolean = true,
+    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+){
+    val context = LocalContext.current
+
+    //Requesting permissions: https://developer.android.com/training/permissions/requesting
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // permission granted -> continue
+        } else {
+            // permission denied -> explain consequence of denying permissions
+            showPermissionDeniedDialog(context)
+        }
+    }
+
+    checkNotificationPermission(context, requestPermissionLauncher)
+
+    Scaffold(
+        topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack)}
+    ) {innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)){
+            
+        }
+    }
+
+
+
+
+}
+
+@Composable
+fun PermissionsBody(
+    modifier: Modifier = Modifier,
+){
+    Column {
+        Row {
+            Text(text = stringResource(id = R.string.permissions_top))
+        }
+        Row {
+            Icon(imageVector = Icons.Default.Info, contentDescription = stringResource(id = R.string.permissions_notification_title))
+            Column {
+                Text(text = stringResource(id = R.string.permissions_notification_title))
+                Text(text = stringResource(id = R.string.permissions_notification_desc))
+            }
+        }
+        Text(text = stringResource(id = R.string.permissions_notification_desc))
+        Button(onClick = { /*TODO*/ }) {
+            
+        }
+    }
+}
+
+
+ChatGPT:
+
+The error you are encountering in the checkNotificationPermission function when trying to use shouldShowRequestPermissionRationale indicates a type mismatch issue. Specifically, shouldShowRequestPermissionRationale is being used incorrectly because it expects two parameters: an Activity and a String for the permission.
+
+In Android development, shouldShowRequestPermissionRationale is a method that belongs to Activity, not Context, and it checks whether you should show UI with rationale for requesting a permission. The method is used within an activity context to provide the user with more information about why a permission is needed after they have denied the request once but before they select "Don't ask again."
+Correcting the Issue
+
+To fix this issue, you need to ensure that the context object passed to shouldShowRequestPermissionRationale is cast to an Activity. In Compose, you can do this using LocalContext.current and then casting it to Activity when necessary. Here's how to correct your function:
+
+kotlin
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkNotificationPermission(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+    when {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
+            // Permission already granted, handle as needed
+        }
+
+        context is Activity && context.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+            // Show rationale dialog before making the request again
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        else -> {
+            // No rationale needed; directly ask for the permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+"
+```
+
+## Generative AI Usage 5.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was help with restoring the current App state when bringing the app to the foreground through a notification.
+
+#### Chat log:
+```
+User:
+
+This is my function to send a notification:
+"fun sendNotification(context: Context, title: String, content: String, notificationId: Int) {
+    val builder = NotificationCompat.Builder(context, "CHANNEL_ID")
+        .setSmallIcon(R.drawable.logo)
+        .setContentTitle(title)
+        .setContentText(content)
+        .setStyle(NotificationCompat.BigTextStyle()
+            .bigText(content))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+    with(NotificationManagerCompat.from(context)) {
+        notify(notificationId, builder.build())     //permission to send notifications always granted by this point
+    }
+}"
+
+How do I create an tap action so that the app is brought to focus when a notification is tapped?
+
+
+ChatGPT:
+
+To make the app come to focus or launch a specific activity when the user taps on a notification, you'll need to use a PendingIntent. This intent will specify the action to take when the notification is tapped. Usually, this action is to open a specific activity within your application.
+
+Here’s how you can modify your sendNotification function to include a tap action that opens a specific activity when the notification is tapped:
+Step 1: Create an Intent for the Activity
+
+First, create an Intent that launches the activity you want to open when the notification is tapped.
+Step 2: Wrap the Intent in a PendingIntent
+
+This intent needs to be wrapped in a PendingIntent. A PendingIntent gives the Android system the permission and capability to execute the intent operation on behalf of your application, at a later time or in response to certain events (like a user tapping the notification).
+Step 3: Set the PendingIntent to the Notification Builder
+
+Attach this PendingIntent to the NotificationCompat.Builder instance using the setContentIntent method.
+
+Here’s how you can integrate these steps into your existing sendNotification function:
+
+kotlin
+
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.example.qup.R // Adjust the import based on your actual R class import
+
+fun sendNotification(context: Context, title: String, content: String, notificationId: Int) {
+    // Create an intent that will be fired when the user taps the notification.
+    val intent = Intent(context, MainActivity::class.java) // Replace MainActivity with the activity you want to launch.
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+    // Wrap the intent into a PendingIntent
+    val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    // Build the notification as before, adding the PendingIntent
+    val builder = NotificationCompat.Builder(context, "CHANNEL_ID")
+        .setSmallIcon(R.drawable.logo) // Make sure you have a valid drawable resource for the icon.
+        .setContentTitle(title)
+        .setContentText(content)
+        .setStyle(NotificationCompat.BigTextStyle().bigText(content))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(pendingIntent) // Set the PendingIntent to the builder
+        .setAutoCancel(true) // Automatically remove the notification when tapped.
+
+    // Notify the user
+    with(NotificationManagerCompat.from(context)) {
+        notify(notificationId, builder.build())
+    }
+}
+
+Explanation:
+
+    Intent and PendingIntent: The intent is configured to start your main activity (or any other activity you choose). The PendingIntent.getActivity method is used to create a PendingIntent that will start an activity. The flags FLAG_ACTIVITY_NEW_TASK and FLAG_ACTIVITY_CLEAR_TASK are set to ensure that when the activity starts, it clears any existing tasks and starts a new task for this activity, providing a clean state.
+    Notification Builder: The setContentIntent method is used to set the PendingIntent on the notification builder. This means that when the notification is tapped, the intent wrapped by this PendingIntent will be executed, thus opening the activity.
+    Auto-cancel: Setting setAutoCancel(true) on the builder makes sure that the notification dismisses itself when it is tapped.
+
+Make sure to adjust the Intent to target the correct activity in your application and ensure that all activities you might launch via notifications are properly declared in your AndroidManifest.xml. Also, adjust the icon (setSmallIcon(R.drawable.logo)) to a suitable one for your application.
+
+
+User:
+
+That isnt quite doing what I want it to do. I want it to return to the state the App was in. Currently, this code returns the app to the state it is in when it is launched (Home screen)
+
+
+ChatGPT:
+
+If you want the notification tap to bring the app to its current state, rather than starting a new activity or resetting to the home screen, you need to adjust how the Intent is set up in the PendingIntent. The goal is to ensure that the Intent used respects the current task and back stack of the application rather than creating a new task or clearing the existing one.
+
+Here’s how to modify the Intent and PendingIntent to restore the app to its current state:
+Using Existing Task and Stack
+
+If your app is already running and you want the notification to simply bring the app back to the front (whatever state it was left in), you can use the following approach:
+
+kotlin
+
+fun sendNotification(context: Context, title: String, content: String, notificationId: Int) {
+    // Intent that mimics the launcher intent
+    val intent = Intent(context, MainActivity::class.java).apply {
+        // Set the action and category to mimic the launcher
+        action = Intent.ACTION_MAIN
+        addCategory(Intent.CATEGORY_LAUNCHER)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    // Wrap the intent into a PendingIntent
+    val pendingIntent = PendingIntent.getActivity(
+        context,
+        0,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    // Build the notification as before, adding the PendingIntent
+    val builder = NotificationCompat.Builder(context, "CHANNEL_ID")
+        .setSmallIcon(R.drawable.logo) // Ensure you have a valid icon
+        .setContentTitle(title)
+        .setContentText(content)
+        .setStyle(NotificationCompat.BigTextStyle().bigText(content))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true) // Automatically remove the notification when tapped
+
+    // Notify the user
+    with(NotificationManagerCompat.from(context)) {
+        notify(notificationId, builder.build())
+    }
+}
+
+Key Changes:
+
+    Intent Flags: The use of Intent.FLAG_ACTIVITY_NEW_TASK is important as it attempts to use an existing task that already has the specified activity on top. This flag ensures that if the activity is already running in the foreground, it will not create a new instance but bring the existing one to the front.
+
+    Mimicking the Launcher: By setting ACTION_MAIN and CATEGORY_LAUNCHER, the intent mimics the launcher's intent, which is typically used to start your app from the home screen. This makes sure that the activity stack is preserved.
+
+    PendingIntent Flags: PendingIntent.FLAG_UPDATE_CURRENT ensures that if there is a pending intent already created for the same Intent, it will be updated with the new Intent. The PendingIntent.FLAG_IMMUTABLE flag is used for security best practices, ensuring that the intent’s data cannot be changed after it's created.
+
+
+```
+
+## Generative AI Usage 6.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help with requesting multiple permissions at once.
+
+#### Chat log:
+```
+User:
+
+I am developing an Android app using Kotlin and Jetpack Compose. The app requires permissions for both Notifications and User Location. Both of these permissions are in the Manifest file. I have a Composable Screen view that is used to explain to the user what each permission is being used for, along with then asking for the permissions upon button click. Currently, it is only checking for one permission - Notifications. I want to add an additional permission to this check, such that when the button is pressed (and it MUST occur on a button press), it asks for both the Notification and Location permissions before proceeding to the next app view, MapView. Below is snippets from my code relevant to the permission check:
+
+PermissionsScreen:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun PermissionsScreen(
+    modifier: Modifier = Modifier,
+    canNavigateBack: Boolean = true,
+    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+){
+    val context = LocalContext.current
+    val showDeniedDialogState = remember { mutableStateOf(false) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    //Requesting permissions: https://developer.android.com/training/permissions/requesting
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("Permissions","All permissions granted")
+            // all permissions granted -> continue to map
+            navigateToMap("SETU")       //TODO: remove string
+        } else {
+            // permission denied -> show dialog
+            showDeniedDialogState.value = true
+        }
+    }
+
+
+    //Generate AI Usage 4.
+    //Observes for changes in the settings for permission updates
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            //when app is resumed, check permissions
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    //&& other permissions
+                    ) {
+                    Log.d("Permissions", "Permission check on resume: GRANTED")
+                    navigateToMap("map_screen_route")
+                } else {
+                    Log.d("Permissions", "Permission check on resume: DENIED")
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
+
+    Scaffold(
+        topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack)}
+    ) {innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)){
+            PermissionsBody(context = context, requestPermissionLauncher = requestPermissionLauncher)
+        }
+        ShowPermissionDeniedDialog(showDeniedDialogState, context)
+    }
+}"
+
+checkAllPermissions:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkAllPermissions(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>){
+    checkNotificationPermission(context, requestPermissionLauncher)
+}"
+
+checkNotificationPermission:
+"@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkNotificationPermission(context: Context, requestPermissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+    when {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                //&& Other permissions
+        -> {
+            Log.d("Permissions","Notification Permission granted")
+            //Permission granted -> go to map
+        }
+
+        //Generative AI Usage 3.
+        context is Activity && context.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+            // Explain to user reason for permission
+            Log.d("Permissions","Notification Permission ask")
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        //Request other permissions here
+
+
+        else -> {
+            Log.d("Permissions","Notification Permission ask")
+            // directly ask for the permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+}"
+
+ShowPermissionDeniedDialog:
+"@Composable
+fun ShowPermissionDeniedDialog(showDialog: MutableState<Boolean>, context: Context) {
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(stringResource(id = R.string.permissions_denied)) },
+            text = {
+                Text(stringResource(id = R.string.permissions_denied_desc))
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog.value = false
+
+                    //Open app settings: https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+
+                    context.startActivity(intent)
+                }) {
+                    Text(stringResource(id = R.string.open_settings_button))
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    showDialog.value = false
+                }) {
+                    Text(stringResource(id = R.string.alert_cancel))
+                }
+            }
+        )
+    }
+}"
+
+
+ChatGPT:
+
+To modify your existing Jetpack Compose app to request both Notifications and Location permissions simultaneously upon a button click, you will need to update your permissions handling code to support checking and requesting multiple permissions at once. This involves using the ActivityResultContracts.RequestMultiplePermissions instead of ActivityResultContracts.RequestPermission, which is used for a single permission.
+
+Here is how you can adjust your existing Kotlin code:
+
+    Update the Permissions Screen: Change the launcher to handle multiple permissions.
+    Modify the permission check functions: You need to adapt the check and request logic to handle multiple permissions.
+
+Step 1: Update Permissions Screen
+
+Update the PermissionsScreen composable to use ActivityResultContracts.RequestMultiplePermissions:
+
+kotlin
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun PermissionsScreen(
+    modifier: Modifier = Modifier,
+    canNavigateBack: Boolean = true,
+    navigateToMap: (String) -> Unit,
+    onNavigateUp: () -> Unit,
+) {
+    val context = LocalContext.current
+    val showDeniedDialogState = remember { mutableStateOf(false) }
+
+    // New launcher for requesting multiple permissions
+    val requestMultiplePermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            Log.d("Permissions", "All permissions granted")
+            navigateToMap("map_screen_route")
+        } else {
+            showDeniedDialogState.value = true
+        }
+    }
+
+    // You may reuse other parts of your existing composable here...
+
+    // Now use requestMultiplePermissionsLauncher in your button click
+    Button(onClick = { 
+        checkAllPermissions(context, requestMultiplePermissionsLauncher)
+    }) {
+        Text("Request Permissions")
+    }
+}
+
+Step 2: Modify the Permission Check Functions
+
+Change the checkAllPermissions function to handle multiple permissions:
+
+kotlin
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun checkAllPermissions(context: Context, requestMultiplePermissionsLauncher: ManagedActivityResultLauncher<Map<String, Boolean>>) {
+    val requiredPermissions = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.ACCESS_FINE_LOCATION // Add other permissions if needed
+    )
+
+    val allPermissionsGranted = requiredPermissions.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    if (!allPermissionsGranted) {
+        requestMultiplePermissionsLauncher.launch(requiredPermissions)
+    } else {
+        Log.d("Permissions", "All permissions are already granted")
+        // Navigate or perform next steps directly
+    }
+}
+
+Handling Permission Explanation
+
+If your app requires a rationale for permissions, you should check each permission individually before calling launch on requestMultiplePermissionsLauncher. This can be done by showing custom UI elements or dialogs explaining why these permissions are needed before the permission request if the shouldShowRequestPermissionRationale condition is met for any permissions.
+
+Finally, ensure your AndroidManifest.xml includes the necessary permissions, especially for location, which may require both ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION depending on the accuracy you need.
+
+This setup will prompt the user for all necessary permissions at once when the button is clicked, and you will be able to handle the result in the callback of the requestMultiplePermissionsLauncher.
+```
+
+
+
+
+
