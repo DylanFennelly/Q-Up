@@ -10,15 +10,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.qup.RefreshService
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
 import com.example.qup.data.QueueEntry
-import com.example.qup.data.RequestsRepository
 import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.data.UserRepository
 import com.example.qup.helpers.calculateEstimatedQueueTime
@@ -61,7 +58,6 @@ sealed interface JoinQueueUiState {
 class MainViewModel(
     private val facilityRepository: FacilityRepository,
     private val appContext: Context,
-    private val requestsRepository: RequestsRepository,
 ): ViewModel() {
 
     val userRepository = UserRepository(appContext, viewModelScope)
@@ -95,7 +91,7 @@ class MainViewModel(
 
     init{
         Log.i("ViewModel","MainViewModel Init")
-        startAutoRefresh()     //TODO: harcoded id
+        startAutoRefresh()
     }
 
     suspend fun saveUserData(userId:Int, facilityName:String, baseUrl:String, mapLat:Double, mapLng:Double){
@@ -127,39 +123,28 @@ class MainViewModel(
                 Log.d("ViewModel", "timer flow 60 seconds")
                 if (userId > 0) {
                     Log.d("ViewModel", "auto refresh")
-                    refreshData(userId)
+                    refreshData()
                 }
             }
         }
     }
 
-
-    fun startServiceIfNotStarted(context: Context, userId: Int) {
-        if (!isServiceStarted) {
-            val serviceIntent = Intent(context, RefreshService::class.java).apply {
-                putExtra("userId", userId)
-            }
-            context.startService(serviceIntent)
-            isServiceStarted = true
-        }
-    }
-
-    fun refreshData(userId: Int){
+    fun refreshData(){
         Log.i("ViewModel","Refresh Data Called")
         viewModelScope.launch {
             //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
             val attractionsDeferred = async{ getFacilityAttractions() }
-            val queuesDeferred = async{ getUserQueues(userId) }
+            val queuesDeferred = async{ getUserQueues() }
 
             attractionsDeferred.await()
             queuesDeferred.await()
 
-            checkQueueTimes(userId)
+            checkQueueTimes()
         }
     }
 
     //Check user queues for each attraction and send notifications for ones close to queue
-    fun checkQueueTimes(userId: Int){
+    fun checkQueueTimes(){
         Log.d("ViewModel", "Starting queue time check")
         when(mainUiState){
             is MainUiState.Success -> {
@@ -222,7 +207,7 @@ class MainViewModel(
                                                 "Entrance Ticket Available!",
                                                 "Your entrance ticket for ${linkedAttraction.name} is now available.\n\nGo to Your Queues to view the ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 2)       //2 = entrance ticket created
+                                            updateQueueCallNum(queue.attractionId, 2)       //2 = entrance ticket created
                                         }
 
                                         //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
@@ -232,7 +217,7 @@ class MainViewModel(
                                                 "Time to get going!",
                                                 "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 1)       //1 = called to start heading toward attraction
+                                            updateQueueCallNum(queue.attractionId,1)       //1 = called to start heading toward attraction
                                         }
 
                                         //if it has been 10 minutes since entrance ticket generated
@@ -243,7 +228,7 @@ class MainViewModel(
                                                 "Entry Reminder",
                                                 "Your entry ticket for ${linkedAttraction.name} is available.\n\nBe sure to enter the attraction in the next ${reminderOne} minutes or you will lose your ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 3)       //3 = reminder to go to attraction
+                                            updateQueueCallNum(queue.attractionId, 3)       //3 = reminder to go to attraction
                                         }
 
                                         //if it has been 5 minutes since reminder
@@ -255,7 +240,7 @@ class MainViewModel(
                                                 "Entry Reminder",
                                                 "Your entry ticket for ${linkedAttraction.name} is available.\n\nEnter the attraction within the next ${reminderRemove} minutes or you will lose your ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 4)       //4 = final reminder
+                                            updateQueueCallNum(queue.attractionId, 4)       //4 = final reminder
                                         }
 
                                         //if it has been 5 minutes since final reminder
@@ -266,12 +251,12 @@ class MainViewModel(
                                                 "Your entry ticket for ${linkedAttraction.name} has expired. You have been removed from the queue for this attraction.",
                                                 queue.attractionId)
 
-                                            updateQueueCallNum(queue.attractionId, userId, 5)       //to prevent notification from being sent twice
-                                            refreshData(userId) //refresh data afterwards to remove queue from view     TODO: doesnt seem to be working, must refresh again to remove from view
+                                            updateQueueCallNum(queue.attractionId, 5)       //to prevent notification from being sent twice
+                                            refreshData() //refresh data afterwards to remove queue from view
                                         }
 
                                         else if (queue.callNum == 5){       //if call num == 5, remove
-                                            postLeaveAttractionQueue(queue.attractionId, userId)
+                                            postLeaveAttractionQueue(queue.attractionId)
                                         }
 
 
@@ -292,7 +277,7 @@ class MainViewModel(
                                                 "Entrance Ticket Available!",
                                                 "Your entrance ticket for ${linkedAttraction.name} is now available.\n\nGo to Your Queues to view the ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 2)       //2 = entrance ticket created
+                                            updateQueueCallNum(queue.attractionId, 2)       //2 = entrance ticket created
                                         }
 
                                         //if less then firstCallQueueTime (5mins + distance) & user has not been called for this queue yet
@@ -302,7 +287,7 @@ class MainViewModel(
                                                 "Time to get going!",
                                                 "Its almost time to enter ${linkedAttraction.name}, start heading towards the attraction now to make it in time for entry.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 1)       //1 = called to start heading toward attraction
+                                            updateQueueCallNum(queue.attractionId, 1)       //1 = called to start heading toward attraction
                                         }
 
                                         //if it has been 10 minutes since entrance ticket generated
@@ -313,7 +298,7 @@ class MainViewModel(
                                                 "Entry Reminder",
                                                 "Your entry ticket for ${linkedAttraction.name} is available.\n\nBe sure to enter the attraction in the next ${reminderOne} minutes or you will lose your ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 3)       //3 = reminder to go to attraction
+                                            updateQueueCallNum(queue.attractionId, 3)       //3 = reminder to go to attraction
                                         }
 
                                         //if it has been 5 minutes since reminder
@@ -325,7 +310,7 @@ class MainViewModel(
                                                 "Entry Reminder",
                                                 "Your entry ticket for ${linkedAttraction.name} is available.\n\nEnter the attraction within the next ${reminderRemove} minutes or you will lose your ticket.",
                                                 queue.attractionId)
-                                            updateQueueCallNum(queue.attractionId, userId, 4)       //4 = final reminder
+                                            updateQueueCallNum(queue.attractionId, 4)       //4 = final reminder
                                         }
 
                                         //if it has been 5 minutes since final reminder
@@ -336,9 +321,9 @@ class MainViewModel(
                                                 "Your entry ticket for ${linkedAttraction.name} has expired. You have been removed from the queue for this attraction.",
                                                 queue.attractionId)
 
-                                            updateQueueCallNum(queue.attractionId, userId, 5)       //to prevent notification from being sent twice
-                                            postLeaveAttractionQueue(queue.attractionId, userId)
-                                            refreshData(userId) //refresh data afterwards to remove queue from view     TODO: doesnt seem to be working, must refresh again to remove from view
+                                            updateQueueCallNum(queue.attractionId, 5)       //to prevent notification from being sent twice
+                                            postLeaveAttractionQueue(queue.attractionId, )
+                                            refreshData() //refresh data afterwards to remove queue from view
                                         }
 
                                     }
@@ -355,8 +340,6 @@ class MainViewModel(
 
 
     //### REQUESTS ###
-
-    //TODO: Add URL String input to function and facilityRepo function
     suspend fun getFacilityAttractions(){
         Log.i("ViewModel","Starting getFacilityAttractions API request")
 
@@ -374,69 +357,97 @@ class MainViewModel(
 
     }
 
-    suspend fun getUserQueues(userId: Int){
+    suspend fun getUserQueues(){
         Log.i("ViewModel","Starting getUserQueues API request")
 
         val currentBaseUrl = baseUrl.firstOrNull() ?: "https://failed.com/"
+        val currentUserId = userId.firstOrNull() ?: -1
 
-        queuesUiState = try {
-
-            Log.i("ViewModel", "Starting getUserQueues coroutine")
-            val queuesResult = facilityRepository.getUserQueues(currentBaseUrl + "user-queues", userId)
-            Log.i("ViewModel", "API result: ${queuesResult}")
-            QueuesUiState.Success(queuesResult)
-        }catch (e: IOException){
-            Log.e("ViewModel", "Error on API Call: $e")
+        if (currentUserId != -1) {
+            queuesUiState = try {
+                Log.i("ViewModel", "Starting getUserQueues coroutine")
+                val queuesResult =
+                    facilityRepository.getUserQueues(currentBaseUrl + "user-queues", currentUserId)
+                Log.i("ViewModel", "API result: ${queuesResult}")
+                QueuesUiState.Success(queuesResult)
+            } catch (e: IOException) {
+                Log.e("ViewModel", "Error on API Call: $e")
+                QueuesUiState.Error
+            }
+        }else{
+            Log.e("ViewModel", "Error on API Call: Id was -1")
             QueuesUiState.Error
         }
     }
 
-    fun postJoinAttractionQueue(attractionId: Int, userId: Int){
+    fun postJoinAttractionQueue(attractionId: Int){
         Log.i("ViewModel","Starting Join Queue API request")
-
         viewModelScope.launch {
             val currentBaseUrl = baseUrl.firstOrNull() ?: "https://failed.com/"
+            val currentUserId = userId.firstOrNull() ?: -1
 
-            joinQueueUiState = try {
-                Log.i("ViewModel","Starting coroutine")
-                val joinResult = facilityRepository.joinQueue(url = currentBaseUrl + "join-queue" ,body = JoinLeaveQueueBody(attractionId, userId))
-                Log.i("ViewModel", "API result: $joinResult")
-                JoinQueueUiState.Result(joinResult.statusCode)
-            }catch (e: IOException) {
-                Log.e("ViewModel", "Error on API Call: $e")
-                JoinQueueUiState.Error
+            if (currentUserId != -1) {
+                joinQueueUiState = try {
+                    Log.i("ViewModel","Starting coroutine")
+                    val joinResult = facilityRepository.joinQueue(url = currentBaseUrl + "join-queue" ,body = JoinLeaveQueueBody(attractionId, currentUserId))
+                    Log.i("ViewModel", "API result: $joinResult")
+                    JoinQueueUiState.Result(joinResult.statusCode)
+                }catch (e: IOException) {
+                    Log.e("ViewModel", "Error on API Call: $e")
+                    JoinQueueUiState.Error
+                }
+            }else{
+                Log.e("ViewModel", "Error on API Call: Id was -1")
+                QueuesUiState.Error
             }
         }
     }
 
-    fun postLeaveAttractionQueue(attractionId: Int, userId: Int){
+    fun postLeaveAttractionQueue(attractionId: Int){
         Log.i("ViewModel","Starting Leave Queue API request")
         viewModelScope.launch {
-            joinQueueUiState = try {
-                val currentBaseUrl = baseUrl.firstOrNull() ?: "https://failed.com/"
-
-                Log.i("ViewModel","Starting coroutine")
-                val leaveResult = facilityRepository.leaveQueue(url = currentBaseUrl + "leave-queue", body = JoinLeaveQueueBody(attractionId, userId))
-                Log.i("ViewModel", "API result: $leaveResult")
-                JoinQueueUiState.Result(leaveResult.statusCode)
-            }catch (e: IOException) {
-                Log.e("ViewModel", "Error on API Call: $e")
-                JoinQueueUiState.Error
+            val currentBaseUrl = baseUrl.firstOrNull() ?: "https://failed.com/"
+            val currentUserId = userId.firstOrNull() ?: -1
+            if (currentUserId != -1) {
+                joinQueueUiState = try {
+                    Log.i("ViewModel", "Starting coroutine")
+                    val leaveResult = facilityRepository.leaveQueue(
+                        url = currentBaseUrl + "leave-queue",
+                        body = JoinLeaveQueueBody(attractionId, currentUserId)
+                    )
+                    Log.i("ViewModel", "API result: $leaveResult")
+                    JoinQueueUiState.Result(leaveResult.statusCode)
+                } catch (e: IOException) {
+                    Log.e("ViewModel", "Error on API Call: $e")
+                    JoinQueueUiState.Error
+                }
+            }else{
+                Log.e("ViewModel", "Error on API Call: Id was -1")
+                QueuesUiState.Error
             }
         }
     }
 
-    fun updateQueueCallNum(attractionId: Int, userId: Int, callNum: Int){
+    fun updateQueueCallNum(attractionId: Int, callNum: Int){
         Log.i("ViewModel","Update Queue Call Num API request")
         viewModelScope.launch {
             val currentBaseUrl = baseUrl.firstOrNull() ?: "https://failed.com/"
+            val currentUserId = userId.firstOrNull() ?: -1
 
-            try {
-                Log.i("ViewModel","Starting coroutine")
-                val updateResult = facilityRepository.updateQueueCallNum(url = currentBaseUrl + "update-queue", body = UpdateCallNumBody(attractionId, userId, callNum))
-                Log.i("ViewModel", "API result: $updateResult")
-            }catch (e: IOException) {
-                Log.e("ViewModel", "Error on API Call: $e")
+            if (currentUserId != -1) {
+                try {
+                    Log.i("ViewModel", "Starting coroutine")
+                    val updateResult = facilityRepository.updateQueueCallNum(
+                        url = currentBaseUrl + "update-queue",
+                        body = UpdateCallNumBody(attractionId, currentUserId, callNum)
+                    )
+                    Log.i("ViewModel", "API result: $updateResult")
+                } catch (e: IOException) {
+                    Log.e("ViewModel", "Error on API Call: $e")
+                }
+            }else{
+                Log.e("ViewModel", "Error on API Call: Id was -1")
+                QueuesUiState.Error
             }
         }
     }

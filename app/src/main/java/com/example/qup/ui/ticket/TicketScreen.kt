@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -48,7 +49,9 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
+import kotlinx.coroutines.flow.first
 
 object TicketDestination : NavigationDestination {
     override val route = "ticket"
@@ -69,16 +72,19 @@ fun TicketScreen(
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
+    mainViewModel: MainViewModel,
     ticketViewModel: TicketViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val attractionId = backStackEntry.arguments?.getInt(TicketDestination.attractionId)
     val userId = backStackEntry.arguments?.getInt(TicketDestination.userId)
+    val scope = rememberCoroutineScope()
 
     //running the checkForQueue function once upon composition
     LaunchedEffect(key1 = true){
+        val baseUrl = mainViewModel.baseUrl.first()
         if (attractionId != null && userId != null) {
-            ticketViewModel.checkForQueue(attractionId, userId)
+            ticketViewModel.checkForQueue(attractionId, userId, baseUrl)
         }
     }
 

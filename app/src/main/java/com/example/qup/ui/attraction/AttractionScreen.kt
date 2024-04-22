@@ -107,7 +107,7 @@ fun AttractionScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         refreshThreshold = 80.dp,
-        onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+        onRefresh = { mainViewModel.refreshData() })
     var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -233,9 +233,9 @@ fun AttractionScreen(
                                 FloatingActionButton(
                                     onClick = {
                                         mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                        mainViewModel.postJoinAttractionQueue(attraction.id, 0)
+                                        mainViewModel.postJoinAttractionQueue(attraction.id,)
                                         lastRequest = "Join"
-                                    }, //TODO: hardcoded user ID
+                                    },
                                     containerColor = colorResource(id = R.color.baby_blue),
                                     contentColor = colorResource(id = R.color.white),
                                 ) {
@@ -304,7 +304,7 @@ fun AttractionScreen(
                                 TextButton(onClick = {
                                     leaveConfirmation = false
                                     mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                    mainViewModel.postLeaveAttractionQueue(attraction.id, 0) //TODO: hardcoded user ID
+                                    mainViewModel.postLeaveAttractionQueue(attraction.id)
                                     lastRequest = "Leave"
                                 }
                                 ) {
@@ -319,7 +319,7 @@ fun AttractionScreen(
                         is JoinQueueUiState.Result -> {
                             AlertDialog(
                                 onDismissRequest = {
-                                    mainViewModel.refreshData(0)        //TODO: hardcoded user ID
+                                    mainViewModel.refreshData()
                                     mainViewModel.joinQueueUiState = JoinQueueUiState.Idle
                                 },
                                 title = {
@@ -368,7 +368,7 @@ fun AttractionScreen(
                                 },
                                 confirmButton = {
                                     TextButton(onClick = {
-                                        mainViewModel.refreshData(0)
+                                        mainViewModel.refreshData()
                                         mainViewModel.joinQueueUiState =
                                             JoinQueueUiState.Idle
                                     }
@@ -449,7 +449,6 @@ fun AttractionDetails(
                     }
                 }
 
-                //TODO: add status message for when attraction is closed or maintenance
                 //Queue Time
                 if (attraction.status == "Open") {
                     val queueTime = if (linkedQueue != null) {

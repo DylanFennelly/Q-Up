@@ -39,7 +39,7 @@ fun AppNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     //same view model for multiple screens -> initialise once, pass into screens
-    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)        //TODO: possibly move? idk how many standards im violating by initialising here
+    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     NavHost(
         navController = navController,
@@ -49,7 +49,7 @@ fun AppNavGraph(
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToMap = {
-                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
 
                 },
@@ -67,7 +67,7 @@ fun AppNavGraph(
                     navController.navigate(HomeDestination.route)
                 },
                 navigateToMap = {
-                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
                 },
                 mainViewModel = mainViewModel
@@ -77,7 +77,7 @@ fun AppNavGraph(
         composable(route = PermissionsDestination.route) {
             PermissionsScreen(
                 navigateToMap = {
-                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
                 },
                 navigateToCamera = {
@@ -164,7 +164,7 @@ fun AppNavGraph(
             arguments = listOf(navArgument(AttractionDestination.attractionID) {
                 type = NavType.IntType
             })
-        ) {backStackEntry ->
+        ) {backStackEntry -> //Generative AI Usage 1.
             //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
             //Log.i("ViewModel", "attractionId: ${attractionId}")
             //if (attractionId != null) {
@@ -204,30 +204,8 @@ fun AppNavGraph(
                 navigateToList = {
                     navController.navigate(ListDestination.route)
                 },
+                mainViewModel = mainViewModel
             )
         }
     }
 }
-        //keeping as example of route with args
-//        composable(
-//            route = ListDestination.routeWithArgs,
-//            arguments = listOf(navArgument(ListDestination.facility){
-//                type = NavType.StringType
-//            })
-//        ){backStackEntry ->            //Generative AI Usage 1.
-//            val facilityName = backStackEntry.arguments?.getString(ListDestination.facility)
-//
-//            if (facilityName != null) {
-//                ListScreen(
-//                    onNavigateUp = {
-//                        navController.navigate("${MapDestination.route}/${it}")
-//                    },
-//                    facilityName = facilityName,
-//                    navigateToMap = {
-//                        navController.navigate("${MapDestination.route}/${it}")
-//                    },
-//                    mainViewModel = mainViewModel,
-//                    listUiState = mainViewModel.mainUiState
-//                )
-//            }
-//        }

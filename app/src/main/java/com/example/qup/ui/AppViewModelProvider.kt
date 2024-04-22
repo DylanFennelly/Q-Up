@@ -22,7 +22,6 @@ object AppViewModelProvider{
             MainViewModel(
                 queueApplicationContainer().container.facilityRepository,
                 queueApplicationContainer().applicationContext,  //passing context for notifications
-                queueApplicationContainer().requestsRepository,
             )
         }
         initializer {
@@ -34,7 +33,6 @@ object AppViewModelProvider{
         initializer {
             TicketViewModel(
                 queueApplicationContainer().container.facilityRepository,
-                queueApplicationContainer().container.baseUrl
             )
         }
         initializer {

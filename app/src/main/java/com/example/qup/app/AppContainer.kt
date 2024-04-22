@@ -13,12 +13,9 @@ import retrofit2.Retrofit
 //Container to instantiate data repositories
 interface AppContainer {
     val facilityRepository: FacilityRepository
-    val baseUrl: String
 }
 
 class AppDataContainer: AppContainer{
-    val baseTestUrl = "https://owhvjc8fwj.execute-api.eu-west-1.amazonaws.com/q-up-test-api-stage/"     //todo: not hardcoded
-
     //prints API requests to logs with "OkHttp" tag - https://stackoverflow.com/questions/32514410/logging-with-retrofit-2
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -41,6 +38,4 @@ class AppDataContainer: AppContainer{
     override val facilityRepository: FacilityRepository by lazy {
         NetworkFacilityRepository(retrofitService)
     }
-    override val baseUrl: String
-        get() = baseTestUrl
 }

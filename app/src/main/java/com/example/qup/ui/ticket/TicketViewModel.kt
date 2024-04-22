@@ -22,7 +22,6 @@ sealed interface TicketUiState {
 }
 class TicketViewModel(
     private val facilityRepository: FacilityRepository,
-    val baseUrl: String
 ): ViewModel() {
     var ticketUiState: TicketUiState by mutableStateOf(TicketUiState.Loading)
         private set
@@ -32,7 +31,7 @@ class TicketViewModel(
     }
 
     //Ensuring queue entry is still valid
-    fun checkForQueue(attractionId: Int, userId: Int){
+    suspend fun checkForQueue(attractionId: Int, userId: Int, baseUrl:String){
         Log.i("TicketViewModel", "Starting checkForQueue")
         viewModelScope.launch {
             ticketUiState = try {
