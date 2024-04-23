@@ -80,6 +80,7 @@ fun AppNavGraph(
                     mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
                 },
+                onBack = {navController.navigate(HomeDestination.route) },
                 mainViewModel = mainViewModel
             )
         }
@@ -89,7 +90,9 @@ fun AppNavGraph(
                 navigateToHome = {
                     navController.navigate(HomeDestination.route)
                 },
-                onNavigateUp = { navController.popBackStack() })
+                onNavigateUp = { navController.popBackStack() },
+                onBack = {navController.navigate(HomeDestination.route) }
+            )
         }
 
         composable(
@@ -111,6 +114,7 @@ fun AppNavGraph(
                     onNavigateUp = {
                         navController.navigate(HomeDestination.route)
                     },
+                    onBack = {navController.navigate(HomeDestination.route)},
                     mapLatLng = mapLocation,
                     mapZoom = mapZoom,
                     navigateToList = {
@@ -142,6 +146,9 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(MapDestination.route)
                 },
+                onBack = {
+                    navController.navigate(MapDestination.route)
+                },
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
@@ -161,6 +168,9 @@ fun AppNavGraph(
         ) {
             QueuesScreen(
                 onNavigateUp = {
+                    navController.navigate(MapDestination.route)
+                },
+                onBack = {
                     navController.navigate(MapDestination.route)
                 },
                 navigateToMap = {
@@ -189,6 +199,7 @@ fun AppNavGraph(
             //if (attractionId != null) {
                 AttractionScreen(
                     onNavigateUp = { navController.navigate(ListDestination.route) },
+                    onBack = { navController.navigate(ListDestination.route) },
                     navigateToMap = { navController.navigate(MapDestination.route) },
                     navigateToQueues = {
                         navController.navigate(QueuesDestination.route)
@@ -217,6 +228,7 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(QueuesDestination.route)
                 },
+                onBack = { navController.navigate(QueuesDestination.route) },
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },

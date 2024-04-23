@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -70,10 +71,11 @@ object QueuesDestination : NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun QueuesScreen(
-    canNavigateBack: Boolean = true,
+    canNavigateBack: Boolean = false,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
+    onBack: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     navigateToTicket: (Int, Int) -> Unit,
     mainViewModel: MainViewModel,
@@ -112,6 +114,10 @@ fun QueuesScreen(
 
     fun setAttractionId(id: Int) {
         attractionId = id
+    }
+
+    BackHandler {
+        onBack()
     }
 
     Scaffold(

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -71,11 +72,16 @@ fun CameraScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     cameraViewModel: CameraViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
+
+    BackHandler {
+        onBack()
+    }
 
     Scaffold(
         modifier = Modifier,

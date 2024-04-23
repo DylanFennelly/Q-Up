@@ -70,5 +70,8 @@
     <string name="ticket_error_461">This ticket has expired. If you believe this to be an error, request assistance from facility staff.</string>
     <string name="ticket_error_462">This ticket has already been activated. If you believe this to be an error, request assistance from facility staff.</string>
     <string name="ticket_error_misc">Something went wrong. Exit this screen and try scanning your code again. If issues persist, request assistance from facility staff.</string>
-
+    <string name="exit_facility_alert_title">Exit Facility?</string>
+    <string name="exit_facility_alert_desc">Are you sure you want to exit the facility?</string>
+    <string name="exit_facility_button">Exit Facility</string>
+    <string name="exit_facility_and_reset_id_button">Exit Facility and Release User ID</string>
 </resources>

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -67,6 +68,7 @@ fun PermissionsScreen(
     canNavigateBack: Boolean = true,
     navigateToHome: () -> Unit,
     onNavigateUp: () -> Unit,
+    onBack: () -> Unit,
 ){
     val context = LocalContext.current
     val showDeniedDialogState = remember { mutableStateOf(false) }
@@ -84,6 +86,11 @@ fun PermissionsScreen(
         } else {
             showDeniedDialogState.value = true
         }
+    }
+
+    //https://foso.github.io/Jetpack-Compose-Playground/activity/backhandler/
+    BackHandler {
+        onBack()
     }
 
 
@@ -229,13 +236,16 @@ fun PermissionsBody(
 fun ShowPermissionDeniedDialog(showDialog: MutableState<Boolean>, context: Context) {
     if (showDialog.value) {
         AlertDialog(
+            containerColor = colorResource(id = R.color.light_baby_blue),
             onDismissRequest = { showDialog.value = false },
             title = { Text(stringResource(id = R.string.permissions_denied)) },
             text = {
                 Text(stringResource(id = R.string.permissions_denied_desc))
             },
             confirmButton = {
-                Button(onClick = {
+                Button(
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue)),
+                    onClick = {
                     showDialog.value = false
 
                     //Open app settings: https://stackoverflow.com/questions/32822101/how-can-i-programmatically-open-the-permission-screen-for-a-specific-app-on-andr
@@ -249,7 +259,9 @@ fun ShowPermissionDeniedDialog(showDialog: MutableState<Boolean>, context: Conte
                 }
             },
             dismissButton = {
-                Button(onClick = {
+                Button(
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue)),
+                    onClick = {
                     showDialog.value = false
                 }) {
                     Text(stringResource(id = R.string.alert_cancel))

@@ -2,6 +2,7 @@ package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -59,10 +60,11 @@ object ListDestination: NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
-    canNavigateBack: Boolean = true,
+    canNavigateBack: Boolean = false,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToQueues: () -> Unit,
+    onBack: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
     listUiState: MainUiState,
@@ -71,6 +73,10 @@ fun ListScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData() })
+
+    BackHandler {
+        onBack()
+    }
 
     Scaffold(
         topBar = {

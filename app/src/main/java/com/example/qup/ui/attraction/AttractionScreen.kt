@@ -2,6 +2,7 @@ package com.example.qup.ui.attraction
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -95,6 +96,7 @@ fun AttractionScreen(
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToQueues: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     attractionUiState: MainUiState,
     queuesUiState: QueuesUiState,
@@ -110,6 +112,10 @@ fun AttractionScreen(
         onRefresh = { mainViewModel.refreshData() })
     var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler {
+        onBack()
+    }
 
     when (attractionUiState) {
         //TODO: add Loading and Error states

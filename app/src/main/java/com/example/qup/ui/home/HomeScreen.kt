@@ -2,9 +2,11 @@ package com.example.qup.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,6 +61,7 @@ fun HomeScreen(
     navigateToMap: () -> Unit,
     navigateToPermissions: () -> Unit,
     navigateToCamera: () -> Unit,
+
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -83,6 +86,15 @@ fun HomeScreen(
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
             )
+
+    BackHandler(enabled = true) {
+        //https://stackoverflow.com/questions/72043735/jetpack-compose-implement-home-button-functionality-on-backpress
+        val startMain = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(startMain)
+    }
 
     Scaffold(
         //topBar = { QueueTopAppBar(title = "Home") }
@@ -142,11 +154,6 @@ fun HomeScreen(
                                         mapLat == 0.0 &&
                                         mapLng == 0.0
                                     ) {
-                                        Toast.makeText(
-                                            context,
-                                            "Saved User ID no longer valid.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         Log.i("HomeViewModel", "Beginning Nav")
                                         if (permissionsValid) {
                                             navigateToCamera()
@@ -195,11 +202,6 @@ fun HomeScreen(
                                     mapLat == 0.0 &&
                                     mapLng == 0.0
                                 ) {
-                                    Toast.makeText(
-                                        context,
-                                        "Saved User ID no longer valid.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                     Log.i("HomeViewModel", "Beginning Nav")
                                     if (permissionsValid) {
                                         navigateToCamera()

@@ -2,6 +2,7 @@ package com.example.qup.ui.ticket
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -72,6 +73,7 @@ fun TicketScreen(
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     ticketViewModel: TicketViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
@@ -86,6 +88,10 @@ fun TicketScreen(
         if (attractionId != null && userId != null) {
             ticketViewModel.checkForQueue(attractionId, userId, baseUrl)
         }
+    }
+
+    BackHandler {
+        onBack()
     }
 
     Scaffold(
