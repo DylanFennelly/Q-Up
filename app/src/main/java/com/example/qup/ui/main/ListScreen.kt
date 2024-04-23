@@ -2,6 +2,7 @@ package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,14 +14,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,8 +33,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
@@ -46,6 +53,7 @@ import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
 import kotlin.math.log
@@ -59,10 +67,11 @@ object ListDestination: NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ListScreen(
-    canNavigateBack: Boolean = true,
+    canNavigateBack: Boolean = false,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToQueues: () -> Unit,
+    onBack: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     mainViewModel: MainViewModel,
     listUiState: MainUiState,
@@ -71,13 +80,20 @@ fun ListScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData() })
+    val showInfoDialogState = remember { mutableStateOf(false) }
+
+    BackHandler {
+        onBack()
+    }
 
     Scaffold(
         topBar = {
             QueueTopAppBar(
                 title = stringResource(R.string.attraction_list_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp()}
+                navigateUp = {onNavigateUp()},
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) }
@@ -86,11 +102,18 @@ fun ListScreen(
             .padding(innerPadding)
             .pullRefresh(pullRefreshState)
         ) {
+            if (showInfoDialogState.value) {
+                ShowInfoDialog(
+                    showInfoDialog = showInfoDialogState,
+                    title = stringResource(id = R.string.attraction_list_button),
+                    description = stringResource(id = R.string.list_info)
+                )
+            }
             when(listUiState){
-                is MainUiState.Loading -> ListLoading()
+                is MainUiState.Loading -> RequestLoading()
                 is MainUiState.Success -> {
                     when (queuesUiState) {
-                        is QueuesUiState.Loading -> ListLoading()
+                        is QueuesUiState.Loading -> RequestLoading()
                         is QueuesUiState.Success -> {
                             ListBody(
                                 attractions = listUiState.attractions,
@@ -102,14 +125,15 @@ fun ListScreen(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
                         }
-                        is QueuesUiState.Error -> ListError()
+                        is QueuesUiState.Error -> InternetError(mainViewModel = mainViewModel)
                     }
                 }
-                is MainUiState.Error -> ListError()
+                is MainUiState.Error -> InternetError(mainViewModel = mainViewModel)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
             }
+
 
         }
 
@@ -221,15 +245,6 @@ fun AttractionItem(
             }
         }
     }
-}
-
-@Composable
-fun ListLoading(modifier: Modifier = Modifier){
-    Image(
-        modifier = modifier.size(200.dp),
-        painter = painterResource(R.drawable.loading_img),
-        contentDescription = stringResource(R.string.loading)
-    )
 }
 
 @Composable

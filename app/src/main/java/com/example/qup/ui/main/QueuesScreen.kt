@@ -1,6 +1,7 @@
 package com.example.qup.ui.main
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -57,6 +59,7 @@ import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -70,10 +73,11 @@ object QueuesDestination : NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun QueuesScreen(
-    canNavigateBack: Boolean = true,
+    canNavigateBack: Boolean = false,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
+    onBack: () -> Unit,
     navigateToAttraction: (Int) -> Unit,
     navigateToTicket: (Int, Int) -> Unit,
     mainViewModel: MainViewModel,
@@ -88,6 +92,7 @@ fun QueuesScreen(
         onRefresh = { mainViewModel.refreshData() })
 
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
+    val showInfoDialogState = remember { mutableStateOf(false) }
 
     //https://medium.com/@rzmeneghelo/state-hoisting-in-jetpack-compose-keeping-your-apps-state-under-control-958a540a6824
     //state hoisting, i hate android with a burning passion
@@ -114,12 +119,18 @@ fun QueuesScreen(
         attractionId = id
     }
 
+    BackHandler {
+        onBack()
+    }
+
     Scaffold(
         topBar = {
             QueueTopAppBar(
                 title = stringResource(R.string.queues_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = { onNavigateUp() }
+                navigateUp = { onNavigateUp() },
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
         bottomBar = {
@@ -139,13 +150,13 @@ fun QueuesScreen(
         ) {
             when (mainUiState) {
                 is MainUiState.Loading -> {
-                    ListLoading()
+                    RequestLoading()
                 }
 
                 is MainUiState.Success -> {
                     when (queuesUiState) {
                         is QueuesUiState.Loading -> {
-                            ListLoading()
+                            RequestLoading()
                         }
 
                         is QueuesUiState.Success -> {
@@ -193,19 +204,25 @@ fun QueuesScreen(
                             }
                         }
 
-                        is QueuesUiState.Error -> {
-                            ListError()
-                        }
+                        is QueuesUiState.Error ->
+                            InternetError(mainViewModel = mainViewModel)
                     }
                 }
 
-                is MainUiState.Error -> {
-                    ListError()
-                }
+                is MainUiState.Error ->
+                    InternetError(mainViewModel = mainViewModel)
+
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)
             }
+        }
+        if (showInfoDialogState.value) {
+            ShowInfoDialog(
+                showInfoDialog = showInfoDialogState,
+                title = stringResource(id = R.string.queues_button),
+                description = stringResource(id = R.string.queues_info)
+            )
         }
 
         if (leaveConfirmation) {

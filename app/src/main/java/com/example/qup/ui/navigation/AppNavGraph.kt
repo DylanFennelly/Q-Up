@@ -16,6 +16,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.home.HomeDestination
 import com.example.qup.ui.home.HomeScreen
@@ -35,6 +36,7 @@ import com.example.qup.ui.main.QueuesDestination
 import com.example.qup.ui.main.QueuesScreen
 import com.example.qup.ui.ticket.TicketDestination
 import com.example.qup.ui.ticket.TicketScreen
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -80,6 +82,7 @@ fun AppNavGraph(
                     mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
                 },
+                onBack = {navController.navigate(HomeDestination.route) },
                 mainViewModel = mainViewModel
             )
         }
@@ -89,7 +92,9 @@ fun AppNavGraph(
                 navigateToHome = {
                     navController.navigate(HomeDestination.route)
                 },
-                onNavigateUp = { navController.popBackStack() })
+                onNavigateUp = { navController.popBackStack() },
+                onBack = {navController.navigate(HomeDestination.route) }
+            )
         }
 
         composable(
@@ -97,20 +102,23 @@ fun AppNavGraph(
         ) {
             val lat = remember { mutableDoubleStateOf(0.0) }
             val lng = remember { mutableDoubleStateOf(0.0) }
+            val facilityName =  remember { mutableStateOf("") }
 
             LaunchedEffect(true) {
                 lat.doubleValue = mainViewModel.mapLat.first()
                 lng.doubleValue = mainViewModel.mapLng.first()
+                facilityName.value = mainViewModel.facilityName.first()
             }
             val mapLocation = LatLng(lat.doubleValue, lng.doubleValue)
             val mapZoom = 16f
 
             //only create map if values have been updated
-            if (lat.doubleValue != 0.0 && lng.doubleValue != 0.0) {
+            if (lat.doubleValue != 0.0 && lng.doubleValue != 0.0 && facilityName.value != "") {
                 MapScreen(
                     onNavigateUp = {
                         navController.navigate(HomeDestination.route)
                     },
+                    onBack = {navController.navigate(HomeDestination.route)},
                     mapLatLng = mapLocation,
                     mapZoom = mapZoom,
                     navigateToList = {
@@ -124,7 +132,8 @@ fun AppNavGraph(
                     queuesUiState = mainViewModel.queuesUiState,
                     navigateToAttraction = {
                         navController.navigate("${AttractionDestination.route}/${it}")
-                    }
+                    },
+                    facilityName = facilityName.value
                 )
             }else{
                 RequestLoading()
@@ -140,6 +149,9 @@ fun AppNavGraph(
         ) {
             ListScreen(
                 onNavigateUp = {
+                    navController.navigate(MapDestination.route)
+                },
+                onBack = {
                     navController.navigate(MapDestination.route)
                 },
                 navigateToMap = {
@@ -161,6 +173,9 @@ fun AppNavGraph(
         ) {
             QueuesScreen(
                 onNavigateUp = {
+                    navController.navigate(MapDestination.route)
+                },
+                onBack = {
                     navController.navigate(MapDestination.route)
                 },
                 navigateToMap = {
@@ -189,6 +204,7 @@ fun AppNavGraph(
             //if (attractionId != null) {
                 AttractionScreen(
                     onNavigateUp = { navController.navigate(ListDestination.route) },
+                    onBack = { navController.navigate(ListDestination.route) },
                     navigateToMap = { navController.navigate(MapDestination.route) },
                     navigateToQueues = {
                         navController.navigate(QueuesDestination.route)
@@ -217,6 +233,7 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(QueuesDestination.route)
                 },
+                onBack = { navController.navigate(QueuesDestination.route) },
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },

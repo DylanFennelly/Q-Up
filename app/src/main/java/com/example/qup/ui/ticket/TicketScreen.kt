@@ -2,6 +2,7 @@ package com.example.qup.ui.ticket
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.InternetError
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import kotlinx.coroutines.flow.first
@@ -72,6 +74,7 @@ fun TicketScreen(
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToList: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     ticketViewModel: TicketViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
@@ -88,13 +91,18 @@ fun TicketScreen(
         }
     }
 
+    BackHandler {
+        onBack()
+    }
+
     Scaffold(
         modifier = Modifier,
         topBar = {
             QueueTopAppBar(
                 title = stringResource(id = R.string.entrance_ticket_title),
                 canNavigateBack = canNavigateBack,
-                navigateUp = { onNavigateUp() }
+                navigateUp = { onNavigateUp() },
+                showInfo = false
             )
         },
         bottomBar = {
@@ -125,7 +133,7 @@ fun TicketScreen(
                     }
                 }
                 is TicketUiState.Error ->{
-                    Text(text = "Error")
+                    InternetError(mainViewModel = mainViewModel)
                 }
             }
         }
@@ -139,17 +147,19 @@ fun TicketBody(
 
     ){
     Column(
-        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 24.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "This is your entrance ticket",
+            text = stringResource(id = R.string.entrance_ticket_top),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom =  16.dp)
         )
         Text(
-            text = "Present this ticket at the attraction entrance to gain entry.",
+            text = stringResource(id = R.string.entrance_ticket_desc),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom =  16.dp)
@@ -170,7 +180,7 @@ fun TicketBody(
             )
         }
         Text(
-            text = "Important Information",
+            text = stringResource(id = R.string.entrance_ticket_important_info),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
         )
@@ -184,7 +194,7 @@ fun TicketBody(
                 modifier = Modifier.padding(end = 16.dp)
             )
             Text(
-                text = "Do not scan this ticket yourself. Doing so may cause you to lose your entrance ticket.",
+                text = stringResource(id = R.string.entrance_ticket_scan_info),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -199,7 +209,7 @@ fun TicketBody(
                 modifier = Modifier.padding(end = 16.dp)
             )
             Text(
-                text = "Ensure your screen brightness is sufficient for the QR code to be visible.",
+                text = stringResource(id = R.string.entrance_ticket_brightness_info),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )

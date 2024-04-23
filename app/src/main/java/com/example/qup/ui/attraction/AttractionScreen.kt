@@ -1,7 +1,10 @@
 package com.example.qup.ui.attraction
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,15 +65,17 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.camera.RequestLoading
+import com.example.qup.ui.main.InternetError
 import com.example.qup.ui.main.JoinQueueUiState
-import com.example.qup.ui.main.ListError
-import com.example.qup.ui.main.ListLoading
 import com.example.qup.ui.main.MainUiState
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.QueuesUiState
+import com.example.qup.ui.main.ShowInfoDialog
 import com.example.qup.ui.main.statusColor
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -95,6 +100,7 @@ fun AttractionScreen(
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
     navigateToQueues: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     attractionUiState: MainUiState,
     queuesUiState: QueuesUiState,
@@ -110,17 +116,30 @@ fun AttractionScreen(
         onRefresh = { mainViewModel.refreshData() })
     var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
+    val showInfoDialogState = remember { mutableStateOf(false) }
+
+    BackHandler {
+        onBack()
+    }
 
     when (attractionUiState) {
-        //TODO: add Loading and Error states
-        is MainUiState.Loading -> {}
-        is MainUiState.Error -> {}
+        is MainUiState.Loading -> {
+            RequestLoading()
+        }
+
+        is MainUiState.Error -> {
+            InternetError(mainViewModel = mainViewModel)
+        }
+
         is MainUiState.Success -> {
 
             val attraction = attractionUiState.attractions[attractionId]
 
             when (queuesUiState) {
-                is QueuesUiState.Loading -> {}
+                is QueuesUiState.Loading -> {
+                    RequestLoading()
+                }
+
                 is QueuesUiState.Error -> {}
                 is QueuesUiState.Success -> {
 
@@ -128,12 +147,13 @@ fun AttractionScreen(
                         queuesUiState.userQueues.find { it.attractionId == attraction.id }
 
                     Scaffold(
-                        modifier = Modifier.pullRefresh(pullRefreshState),
                         topBar = {
                             QueueTopAppBar(
                                 title = stringResource(id = R.string.attraction_detail_button),
                                 canNavigateBack = canNavigateBack,
-                                navigateUp = { onNavigateUp() }
+                                navigateUp = { onNavigateUp() },
+                                showInfo = true,
+                                onInfoClick = {showInfoDialogState.value = true}
                             )
                         },
                         bottomBar = {
@@ -145,115 +165,129 @@ fun AttractionScreen(
                                 navigateToQueues = { navigateToQueues() })
                         },
 
-                        //TODO: disable if user already in queue for attraction & replace with Leave Queue button
                         floatingActionButton = {
-                            //if processing queue Join & user is not in a queue
-                            if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue == null) {
-                                FloatingActionButton(
-                                    onClick = {},
-                                    containerColor = colorResource(id = R.color.dark_baby_blue),
-                                    contentColor = colorResource(id = R.color.disabled_text_grey),
-                                ) {
+                            if (attraction.status == "Open") {
+                                //if processing queue Join & user is not in a queue
+                                if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue == null) {
+                                    FloatingActionButton(
+                                        onClick = {},
+                                        containerColor = colorResource(id = R.color.dark_baby_blue),
+                                        contentColor = colorResource(id = R.color.disabled_text_grey),
+                                    ) {
 
-                                    Row() {
-                                        //while request in progress, display spinner icon
-                                        CircularProgressIndicator(
-                                            color = colorResource(id = R.color.disabled_text_grey),
-                                            modifier = Modifier
-                                                .padding(start = 8.dp)
-                                                .size(24.dp)
-                                        )
+                                        Row() {
+                                            //while request in progress, display spinner icon
+                                            CircularProgressIndicator(
+                                                color = colorResource(id = R.color.disabled_text_grey),
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(24.dp)
+                                            )
 
-                                        Text(
-                                            text = stringResource(id = R.string.join_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                            Text(
+                                                text = stringResource(id = R.string.join_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
-                            //else if user is in queue for attraction (display leave queue instead)
-                            else if (joinQueueUiState != JoinQueueUiState.Loading && linkedQueue != null) {
-                                FloatingActionButton(
-                                    onClick = { leaveConfirmation = true },
-                                    containerColor = colorResource(id = R.color.closed_red),
-                                    contentColor = colorResource(id = R.color.white),
-                                ) {
-                                    Row() {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = stringResource(id = R.string.leave_queue_button),
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.leave_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                //else if user is in queue for attraction (display leave queue instead)
+                                else if (joinQueueUiState != JoinQueueUiState.Loading && linkedQueue != null) {
+                                    FloatingActionButton(
+                                        onClick = { leaveConfirmation = true },
+                                        containerColor = colorResource(id = R.color.closed_red),
+                                        contentColor = colorResource(id = R.color.white),
+                                    ) {
+                                        Row() {
+                                            Icon(
+                                                imageVector = Icons.Default.Clear,
+                                                contentDescription = stringResource(id = R.string.leave_queue_button),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.leave_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
-                            //else if leave queue is in progress
-                            else if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue != null) {
-                                FloatingActionButton(
-                                    onClick = {},
-                                    containerColor = colorResource(id = R.color.disabled_red),
-                                    contentColor = colorResource(id = R.color.disabled_text_grey),
-                                ) {
+                                //else if leave queue is in progress
+                                else if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue != null) {
+                                    FloatingActionButton(
+                                        onClick = {},
+                                        containerColor = colorResource(id = R.color.disabled_red),
+                                        contentColor = colorResource(id = R.color.disabled_text_grey),
+                                    ) {
 
-                                    Row() {
-                                        //while request in progress, display spinner icon
-                                        CircularProgressIndicator(
-                                            color = colorResource(id = R.color.disabled_text_grey),
-                                            modifier = Modifier
-                                                .padding(start = 8.dp)
-                                                .size(24.dp)
-                                        )
+                                        Row() {
+                                            //while request in progress, display spinner icon
+                                            CircularProgressIndicator(
+                                                color = colorResource(id = R.color.disabled_text_grey),
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(24.dp)
+                                            )
 
-                                        Text(
-                                            text = stringResource(id = R.string.leave_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                            Text(
+                                                text = stringResource(id = R.string.leave_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
 
-                            //else user is not in queue and join/leave is not in progress
-                            else {
-                                FloatingActionButton(
-                                    onClick = {
-                                        mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                        mainViewModel.postJoinAttractionQueue(attraction.id,)
-                                        lastRequest = "Join"
-                                    },
-                                    containerColor = colorResource(id = R.color.baby_blue),
-                                    contentColor = colorResource(id = R.color.white),
-                                ) {
+                                //else user is not in queue and join/leave is not in progress
+                                else {
+                                    FloatingActionButton(
+                                        onClick = {
+                                            mainViewModel.joinQueueUiState =
+                                                JoinQueueUiState.Loading
+                                            mainViewModel.postJoinAttractionQueue(attraction.id)
+                                            lastRequest = "Join"
+                                        },
+                                        containerColor = colorResource(id = R.color.baby_blue),
+                                        contentColor = colorResource(id = R.color.white),
+                                    ) {
 
-                                    Row() {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = stringResource(id = R.string.join_queue_button),
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.join_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                        Row() {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = stringResource(id = R.string.join_queue_button),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.join_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
                             }
@@ -262,39 +296,49 @@ fun AttractionScreen(
 
                     ) { innerPadding ->
                         Box(
-                            //modifier = Modifier.pullRefresh(pullRefreshState)
+                            modifier = Modifier.pullRefresh(pullRefreshState).padding(innerPadding)
                         ) {
                             AttractionDetails(
                                 attraction = attraction,
                                 linkedQueue = linkedQueue,
                                 modifier = Modifier
-                                    .padding(innerPadding)
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                PullRefreshIndicator(
+                                    refreshing = isRefreshing,
+                                    state = pullRefreshState
+                                )
+                            }
                         }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            PullRefreshIndicator(
-                                refreshing = isRefreshing,
-                                state = pullRefreshState
-                            )
-                        }
+
+                    }
+                    if (showInfoDialogState.value) {
+                        ShowInfoDialog(
+                            showInfoDialog = showInfoDialogState,
+                            title = stringResource(id = R.string.attraction_detail_button),
+                            description = stringResource(id = R.string.attraction_info)
+                        )
                     }
 
                     //alert for confirming queue leave
-                    if(leaveConfirmation){
+                    if (leaveConfirmation) {
                         AlertDialog(
                             onDismissRequest = { leaveConfirmation = false },
                             title = { Text(text = stringResource(id = R.string.leave_queue_confirmation_alert_title)) },
                             text = {
                                 Text(
-                                    text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attraction.name}? \n\n" + stringResource(id = R.string.leave_queue_confirmation_alert_desc_2),
-                                    textAlign = TextAlign.Center)
-                                   },
+                                    text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attraction.name}? \n\n" + stringResource(
+                                        id = R.string.leave_queue_confirmation_alert_desc_2
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+                            },
                             dismissButton = {
                                 TextButton(onClick = { leaveConfirmation = false }) {
                                     Text(text = stringResource(R.string.alert_cancel))
@@ -376,7 +420,7 @@ fun AttractionScreen(
                                         Text(stringResource(id = R.string.alert_okay))
                                     }
                                 },
-                                )
+                            )
                         }
 
                         else -> {}
@@ -593,9 +637,12 @@ fun AttractionDetails(
                     GoogleMap(
                         cameraPositionState = cameraPositionState,
                         modifier = Modifier.height(225.dp),
-                        properties = MapProperties(mapStyleOptions = mapStyle)
+                        properties = MapProperties(mapStyleOptions = mapStyle, isMyLocationEnabled = true)
                     ) {
-                        Marker(state = MarkerState(LatLng(attraction.lat, attraction.lng))) {
+                        val mapIconBitMap = BitmapFactory.decodeResource(context.resources, R.drawable.map_marker)
+                        val scaledBitmap = Bitmap.createScaledBitmap(mapIconBitMap, 115, 115, false)
+                        val mapIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                        Marker(state = MarkerState(LatLng(attraction.lat, attraction.lng)), icon = mapIcon) {
 
                         }
                     }
@@ -644,7 +691,7 @@ fun queueTimeColour(time: Int): Color {
 @Preview(showBackground = true)
 @Composable
 fun AttractionDetailsPreview() {
-    val queue = QueueEntry(0,0, 150, "2024-04-21T12:03:24Z")
+    val queue = QueueEntry(0, 0, 150, "2024-04-21T12:03:24Z")
     QueueTheme {
         AttractionDetails(
             attraction =

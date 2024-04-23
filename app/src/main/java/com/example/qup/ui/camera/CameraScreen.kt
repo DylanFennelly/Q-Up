@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -33,6 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +51,7 @@ import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.main.MainViewModel
+import com.example.qup.ui.main.ShowInfoDialog
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -71,11 +75,17 @@ fun CameraScreen(
     canNavigateBack: Boolean = true,
     onNavigateUp: () -> Unit,
     navigateToMap: () -> Unit,
+    onBack: () -> Unit,
     mainViewModel: MainViewModel,
     cameraViewModel: CameraViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
+    val showInfoDialogState = remember { mutableStateOf(false) }
+
+    BackHandler {
+        onBack()
+    }
 
     Scaffold(
         modifier = Modifier,
@@ -83,11 +93,20 @@ fun CameraScreen(
             QueueTopAppBar(
                 title = stringResource(id = R.string.camera_title),
                 canNavigateBack = canNavigateBack,
-                navigateUp = { onNavigateUp() }
+                navigateUp = { onNavigateUp() },
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
     ) {  innerPadding ->
         Box {
+            if (showInfoDialogState.value) {
+                ShowInfoDialog(
+                    showInfoDialog = showInfoDialogState,
+                    title = stringResource(id = R.string.camera_title),
+                    description = stringResource(id = R.string.camera_info)
+                )
+            }
             when(cameraViewModel.cameraUiState) {
                 is CameraUiState.Idle -> {
                     QRScanner(

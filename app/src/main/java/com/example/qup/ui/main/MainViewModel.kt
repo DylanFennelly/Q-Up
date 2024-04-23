@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.qup.R
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
@@ -20,6 +21,7 @@ import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.data.UserRepository
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -72,10 +74,8 @@ class MainViewModel(
     val isDataUpdated: StateFlow<Boolean> = userDataUpdated.asStateFlow()
 
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
-        private set
 
     var queuesUiState: QueuesUiState by mutableStateOf(QueuesUiState.Loading)
-        private set
 
     var joinQueueUiState: JoinQueueUiState by mutableStateOf(JoinQueueUiState.Idle)
 
@@ -86,8 +86,6 @@ class MainViewModel(
 
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefreshing.asStateFlow()
-
-    private var isServiceStarted = false
 
     init{
         Log.i("ViewModel","MainViewModel Init")
@@ -131,6 +129,7 @@ class MainViewModel(
 
     fun refreshData(){
         Log.i("ViewModel","Refresh Data Called")
+        _isRefreshing.value = true
         viewModelScope.launch {
             //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
             val attractionsDeferred = async{ getFacilityAttractions() }
@@ -140,6 +139,7 @@ class MainViewModel(
             queuesDeferred.await()
 
             checkQueueTimes()
+            _isRefreshing.value = false
         }
     }
 

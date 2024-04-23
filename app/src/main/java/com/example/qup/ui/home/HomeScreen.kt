@@ -2,9 +2,10 @@ package com.example.qup.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
-import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,22 +29,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.qup.R
-import com.example.qup.helpers.sendNotification
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
-import com.example.qup.ui.theme.QueueTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 object HomeDestination : NavigationDestination {
@@ -59,6 +56,7 @@ fun HomeScreen(
     navigateToMap: () -> Unit,
     navigateToPermissions: () -> Unit,
     navigateToCamera: () -> Unit,
+
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -83,6 +81,15 @@ fun HomeScreen(
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
             )
+
+    BackHandler(enabled = true) {
+        //https://stackoverflow.com/questions/72043735/jetpack-compose-implement-home-button-functionality-on-backpress
+        val startMain = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(startMain)
+    }
 
     Scaffold(
         //topBar = { QueueTopAppBar(title = "Home") }
@@ -142,11 +149,6 @@ fun HomeScreen(
                                         mapLat == 0.0 &&
                                         mapLng == 0.0
                                     ) {
-                                        Toast.makeText(
-                                            context,
-                                            "Saved User ID no longer valid.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                         Log.i("HomeViewModel", "Beginning Nav")
                                         if (permissionsValid) {
                                             navigateToCamera()
@@ -195,11 +197,6 @@ fun HomeScreen(
                                     mapLat == 0.0 &&
                                     mapLng == 0.0
                                 ) {
-                                    Toast.makeText(
-                                        context,
-                                        "Saved User ID no longer valid.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                     Log.i("HomeViewModel", "Beginning Nav")
                                     if (permissionsValid) {
                                         navigateToCamera()
@@ -218,7 +215,7 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.InternetError -> {
-                    InternetError(scope =scope, mainViewModel =  mainViewModel, homeViewModel = homeViewModel)
+                    HomeInternetError(scope =scope, mainViewModel =  mainViewModel, homeViewModel = homeViewModel)
                 }
 
             }
@@ -266,9 +263,9 @@ fun HomeBody(
 }
 
 @Composable
-fun InternetError(modifier: Modifier = Modifier, scope: CoroutineScope, mainViewModel: MainViewModel, homeViewModel: HomeViewModel){
+fun HomeInternetError(modifier: Modifier = Modifier, scope: CoroutineScope, mainViewModel: MainViewModel, homeViewModel: HomeViewModel){
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
