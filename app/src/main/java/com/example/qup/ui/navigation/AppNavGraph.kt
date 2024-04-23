@@ -76,14 +76,9 @@ fun AppNavGraph(
 
         composable(route = PermissionsDestination.route) {
             PermissionsScreen(
-                navigateToMap = {
-                    mainViewModel.refreshData()
-                    navController.navigate(MapDestination.route)
+                navigateToHome = {
+                    navController.navigate(HomeDestination.route)
                 },
-                navigateToCamera = {
-                    navController.navigate(CameraDestination.route)
-                },
-                mainViewModel = mainViewModel,
                 onNavigateUp = { navController.popBackStack() })
         }
 

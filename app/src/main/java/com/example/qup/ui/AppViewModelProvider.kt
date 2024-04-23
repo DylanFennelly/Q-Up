@@ -16,7 +16,7 @@ import com.example.qup.ui.ticket.TicketViewModel
 object AppViewModelProvider{
     val Factory = viewModelFactory {
         initializer {
-            HomeViewModel()
+            HomeViewModel( queueApplicationContainer().container.facilityRepository,)
         }
         initializer {
             MainViewModel(

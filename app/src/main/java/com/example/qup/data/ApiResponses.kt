@@ -48,3 +48,13 @@ data class UserIdApiResponse (
     val statusCode: Int,
     val body: UserIdResponseBody
 )
+
+@Serializable
+data class UserIdValidityResponseBody (
+    val valid: Boolean
+)
+@Serializable
+data class UserIdValidityApiResponse (
+    val statusCode: Int,
+    val body: UserIdValidityResponseBody
+)

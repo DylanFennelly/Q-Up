@@ -81,7 +81,7 @@ fun CameraScreen(
         modifier = Modifier,
         topBar = {
             QueueTopAppBar(
-                title = stringResource(id = R.string.entrance_ticket_title),
+                title = stringResource(id = R.string.camera_title),
                 canNavigateBack = canNavigateBack,
                 navigateUp = { onNavigateUp() }
             )
@@ -241,8 +241,8 @@ fun QRScanner(
                                     Log.d("CameraScreen", "QR Code Scanned: $qrCodeContent")
                                     Toast.makeText(
                                         context,
-                                        "QR Code detected: $qrCodeContent",
-                                        Toast.LENGTH_LONG
+                                        "QR Code detected",
+                                        Toast.LENGTH_SHORT
                                     ).show()
                                     cameraViewModel.getUserId(qrCodeContent)
                                 })

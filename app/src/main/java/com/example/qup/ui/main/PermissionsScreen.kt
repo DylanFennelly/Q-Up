@@ -49,6 +49,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
+import com.example.qup.ui.home.HomeViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 
 //Screen to explain and ask for permissions
@@ -64,10 +65,8 @@ object PermissionsDestination: NavigationDestination {
 fun PermissionsScreen(
     modifier: Modifier = Modifier,
     canNavigateBack: Boolean = true,
-    navigateToMap: (String) -> Unit,
+    navigateToHome: () -> Unit,
     onNavigateUp: () -> Unit,
-    navigateToCamera: () -> Unit,
-    mainViewModel: MainViewModel,
 ){
     val context = LocalContext.current
     val showDeniedDialogState = remember { mutableStateOf(false) }
@@ -81,8 +80,7 @@ fun PermissionsScreen(
     ) { permissions ->
         if (permissions.all { it.value }) {
             Log.d("Permissions", "All permissions granted")
-            //navigateToMap("SETU")
-            navigateToCamera()
+            navigateToHome()        //easier to nav back to home than do all the logic again
         } else {
             showDeniedDialogState.value = true
         }
@@ -101,7 +99,7 @@ fun PermissionsScreen(
                     && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)  == PackageManager.PERMISSION_GRANTED
                     ) {
                     Log.d("Permissions", "Permission check on resume: GRANTED")
-                    navigateToMap("SETU")
+                    navigateToHome()
                 } else {
                     Log.d("Permissions", "Permission check on resume: DENIED")
                 }

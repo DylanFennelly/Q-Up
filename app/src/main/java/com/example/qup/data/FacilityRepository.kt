@@ -11,6 +11,7 @@ interface FacilityRepository {
     suspend fun leaveQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
     suspend fun updateQueueCallNum(url: String, body: UpdateCallNumBody): UpdateCallNumApiResponse
     suspend fun getUserId(url: String): UserIdApiResponse
+    suspend fun checkUserIdValidity(url: String, userId: Int): UserIdValidityApiResponse
 }
 
 //custom exception to pass error code messages to the CameraScreen
@@ -29,6 +30,15 @@ class NetworkFacilityRepository(private val facilityApiService: FacilityApiServi
             return response.body() ?: throw Exception("No data received")
         } else {
             throw ApiException(response.code(), "Error checking ticket: ${response.message()}")
+        }
+    }
+
+    override suspend fun checkUserIdValidity(url: String, userId: Int): UserIdValidityApiResponse {
+        val response = facilityApiService.checkUserIdValidity(url, userId)
+        if (response.isSuccessful) {
+            return response.body() ?: throw Exception("No data received")
+        } else {
+            throw ApiException(response.code(), "Error checking user ID validity: ${response.message()}")
         }
     }
 }

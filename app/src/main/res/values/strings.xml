@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Q-Up</string>
+    <string name="enter_facility_button">Enter Facility</string>
+    <string name="retry_button">Retry</string>
     <string name="home_title">Home</string>
     <string name="app_welcome">Welcome to Q-Up</string>
     <string name="setu_button">Enter SETU</string>

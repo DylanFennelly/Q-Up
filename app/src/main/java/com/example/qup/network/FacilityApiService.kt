@@ -7,6 +7,7 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.data.UpdateCallNumApiResponse
 import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.data.UserIdApiResponse
+import com.example.qup.data.UserIdValidityApiResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -39,4 +40,6 @@ interface FacilityApiService{
     //Query param is included as part of QR code
     @GET
     suspend fun getUserId(@Url url: String): Response<UserIdApiResponse>
+    @GET
+    suspend fun checkUserIdValidity(@Url url: String, @Query("userId") userId: Int): Response<UserIdValidityApiResponse>
 }
