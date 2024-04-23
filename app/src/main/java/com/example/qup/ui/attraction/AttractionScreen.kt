@@ -71,6 +71,7 @@ import com.example.qup.ui.main.JoinQueueUiState
 import com.example.qup.ui.main.MainUiState
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.QueuesUiState
+import com.example.qup.ui.main.ShowInfoDialog
 import com.example.qup.ui.main.statusColor
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
@@ -115,6 +116,7 @@ fun AttractionScreen(
         onRefresh = { mainViewModel.refreshData() })
     var lastRequest by remember { mutableStateOf("") }       //string to keep track of whether last request made was join or leave -> for alerts
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
+    val showInfoDialogState = remember { mutableStateOf(false) }
 
     BackHandler {
         onBack()
@@ -150,7 +152,9 @@ fun AttractionScreen(
                             QueueTopAppBar(
                                 title = stringResource(id = R.string.attraction_detail_button),
                                 canNavigateBack = canNavigateBack,
-                                navigateUp = { onNavigateUp() }
+                                navigateUp = { onNavigateUp() },
+                                showInfo = true,
+                                onInfoClick = {showInfoDialogState.value = true}
                             )
                         },
                         bottomBar = {
@@ -314,6 +318,13 @@ fun AttractionScreen(
                                 state = pullRefreshState
                             )
                         }
+                    }
+                    if (showInfoDialogState.value) {
+                        ShowInfoDialog(
+                            showInfoDialog = showInfoDialogState,
+                            title = stringResource(id = R.string.attraction_detail_button),
+                            description = stringResource(id = R.string.attraction_info)
+                        )
                     }
 
                     //alert for confirming queue leave

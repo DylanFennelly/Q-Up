@@ -121,7 +121,7 @@ fun PermissionsScreen(
 
 
     Scaffold(
-        topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack)}
+        topBar = { QueueTopAppBar(title = stringResource(id = R.string.permissions_title), navigateUp = onNavigateUp, canNavigateBack = canNavigateBack, showInfo = false)}
     ) {innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
             PermissionsBody(context = context, requestPermissionLauncher = requestMultiplePermissionsLauncher)

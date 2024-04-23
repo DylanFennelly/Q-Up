@@ -30,6 +30,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,6 +76,7 @@ fun ListScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData() })
+    val showInfoDialogState = remember { mutableStateOf(false) }
 
     BackHandler {
         onBack()
@@ -84,7 +87,9 @@ fun ListScreen(
             QueueTopAppBar(
                 title = stringResource(R.string.attraction_list_button),
                 canNavigateBack = canNavigateBack,
-                navigateUp = {onNavigateUp()}
+                navigateUp = {onNavigateUp()},
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
         bottomBar = { QueueBottomAppBar(listSelected = true, mapSelected = false, queuesSelected = false, navigateToMap= { navigateToMap() }, navigateToQueues = {navigateToQueues()}) }
@@ -93,6 +98,13 @@ fun ListScreen(
             .padding(innerPadding)
             .pullRefresh(pullRefreshState)
         ) {
+            if (showInfoDialogState.value) {
+                ShowInfoDialog(
+                    showInfoDialog = showInfoDialogState,
+                    title = stringResource(id = R.string.attraction_list_button),
+                    description = stringResource(id = R.string.list_info)
+                )
+            }
             when(listUiState){
                 is MainUiState.Loading -> RequestLoading()
                 is MainUiState.Success -> {

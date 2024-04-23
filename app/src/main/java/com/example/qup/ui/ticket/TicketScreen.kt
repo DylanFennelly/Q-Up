@@ -101,7 +101,8 @@ fun TicketScreen(
             QueueTopAppBar(
                 title = stringResource(id = R.string.entrance_ticket_title),
                 canNavigateBack = canNavigateBack,
-                navigateUp = { onNavigateUp() }
+                navigateUp = { onNavigateUp() },
+                showInfo = false
             )
         },
         bottomBar = {

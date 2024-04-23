@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -43,6 +44,8 @@ fun QueueApp(navController: NavHostController = rememberNavController()){
 fun QueueTopAppBar(
     title: String,
     canNavigateBack: Boolean,
+    showInfo: Boolean,
+    onInfoClick: () -> Unit = {},
     navigateUp: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ){
@@ -63,7 +66,18 @@ fun QueueTopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = colorResource(R.color.baby_blue),
             titleContentColor = Color.White
-        )
+        ),
+        actions = {
+            if (showInfo){
+                IconButton(onClick = { onInfoClick() }) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = stringResource(id = R.string.info_button),
+                        tint = Color.White
+                    )
+                }
+            }
+        }
     )
 }
 

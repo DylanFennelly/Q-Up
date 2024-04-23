@@ -114,6 +114,7 @@ fun MapScreen(
         onRefresh = { mainViewModel.refreshData() })
     val context = LocalContext.current
     val showExitDialogState = remember { mutableStateOf(false) }
+    val showInfoDialogState = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     BackHandler {
@@ -127,7 +128,9 @@ fun MapScreen(
                 canNavigateBack = canNavigateBack,
                 navigateUp = {
                     showExitDialogState.value = true
-                }
+                },
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
         bottomBar = {
@@ -150,6 +153,13 @@ fun MapScreen(
                     onExit = onBack,
                     mainViewModel = mainViewModel,
                     scope = scope
+                )
+            }
+            if (showInfoDialogState.value) {
+                ShowInfoDialog(
+                    showInfoDialog = showInfoDialogState,
+                    title = stringResource(id = R.string.map_title),
+                    description = stringResource(id = R.string.map_info)
                 )
             }
             when (mainUiState) {
@@ -349,6 +359,51 @@ fun InternetError(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
             colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue))
         ) {
             Text(text = stringResource(R.string.retry_button))
+        }
+    }
+}
+
+@Composable
+fun ShowInfoDialog(
+    showInfoDialog: MutableState<Boolean>,
+    title: String,
+    description: String
+){
+    Dialog(onDismissRequest = { showInfoDialog.value = false }) {
+        Surface(
+            shape = MaterialTheme.shapes.medium, elevation = 8.dp,
+            color = colorResource(id = R.color.light_baby_blue)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            showInfoDialog.value = false
+                        },
+                        colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue)),
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text(stringResource(id = R.string.alert_close))
+                    }
+                }
+            }
         }
     }
 }

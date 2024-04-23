@@ -34,6 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.main.MainViewModel
+import com.example.qup.ui.main.ShowInfoDialog
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -78,6 +81,7 @@ fun CameraScreen(
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
+    val showInfoDialogState = remember { mutableStateOf(false) }
 
     BackHandler {
         onBack()
@@ -89,11 +93,20 @@ fun CameraScreen(
             QueueTopAppBar(
                 title = stringResource(id = R.string.camera_title),
                 canNavigateBack = canNavigateBack,
-                navigateUp = { onNavigateUp() }
+                navigateUp = { onNavigateUp() },
+                showInfo = true,
+                onInfoClick = {showInfoDialogState.value = true}
             )
         },
     ) {  innerPadding ->
         Box {
+            if (showInfoDialogState.value) {
+                ShowInfoDialog(
+                    showInfoDialog = showInfoDialogState,
+                    title = stringResource(id = R.string.camera_title),
+                    description = stringResource(id = R.string.camera_info)
+                )
+            }
             when(cameraViewModel.cameraUiState) {
                 is CameraUiState.Idle -> {
                     QRScanner(
