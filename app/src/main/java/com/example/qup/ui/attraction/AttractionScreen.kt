@@ -121,8 +121,11 @@ fun AttractionScreen(
         is MainUiState.Loading -> {
             RequestLoading()
         }
-        is MainUiState.Error -> { InternetError(mainViewModel = mainViewModel)
+
+        is MainUiState.Error -> {
+            InternetError(mainViewModel = mainViewModel)
         }
+
         is MainUiState.Success -> {
 
             val attraction = attractionUiState.attractions[attractionId]
@@ -131,6 +134,7 @@ fun AttractionScreen(
                 is QueuesUiState.Loading -> {
                     RequestLoading()
                 }
+
                 is QueuesUiState.Error -> {}
                 is QueuesUiState.Success -> {
 
@@ -155,115 +159,129 @@ fun AttractionScreen(
                                 navigateToQueues = { navigateToQueues() })
                         },
 
-                        //TODO: disable if user already in queue for attraction & replace with Leave Queue button
                         floatingActionButton = {
-                            //if processing queue Join & user is not in a queue
-                            if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue == null) {
-                                FloatingActionButton(
-                                    onClick = {},
-                                    containerColor = colorResource(id = R.color.dark_baby_blue),
-                                    contentColor = colorResource(id = R.color.disabled_text_grey),
-                                ) {
+                            if (attraction.status == "Open") {
+                                //if processing queue Join & user is not in a queue
+                                if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue == null) {
+                                    FloatingActionButton(
+                                        onClick = {},
+                                        containerColor = colorResource(id = R.color.dark_baby_blue),
+                                        contentColor = colorResource(id = R.color.disabled_text_grey),
+                                    ) {
 
-                                    Row() {
-                                        //while request in progress, display spinner icon
-                                        CircularProgressIndicator(
-                                            color = colorResource(id = R.color.disabled_text_grey),
-                                            modifier = Modifier
-                                                .padding(start = 8.dp)
-                                                .size(24.dp)
-                                        )
+                                        Row() {
+                                            //while request in progress, display spinner icon
+                                            CircularProgressIndicator(
+                                                color = colorResource(id = R.color.disabled_text_grey),
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(24.dp)
+                                            )
 
-                                        Text(
-                                            text = stringResource(id = R.string.join_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                            Text(
+                                                text = stringResource(id = R.string.join_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
-                            //else if user is in queue for attraction (display leave queue instead)
-                            else if (joinQueueUiState != JoinQueueUiState.Loading && linkedQueue != null) {
-                                FloatingActionButton(
-                                    onClick = { leaveConfirmation = true },
-                                    containerColor = colorResource(id = R.color.closed_red),
-                                    contentColor = colorResource(id = R.color.white),
-                                ) {
-                                    Row() {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = stringResource(id = R.string.leave_queue_button),
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.leave_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                //else if user is in queue for attraction (display leave queue instead)
+                                else if (joinQueueUiState != JoinQueueUiState.Loading && linkedQueue != null) {
+                                    FloatingActionButton(
+                                        onClick = { leaveConfirmation = true },
+                                        containerColor = colorResource(id = R.color.closed_red),
+                                        contentColor = colorResource(id = R.color.white),
+                                    ) {
+                                        Row() {
+                                            Icon(
+                                                imageVector = Icons.Default.Clear,
+                                                contentDescription = stringResource(id = R.string.leave_queue_button),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.leave_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
-                            //else if leave queue is in progress
-                            else if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue != null) {
-                                FloatingActionButton(
-                                    onClick = {},
-                                    containerColor = colorResource(id = R.color.disabled_red),
-                                    contentColor = colorResource(id = R.color.disabled_text_grey),
-                                ) {
+                                //else if leave queue is in progress
+                                else if (joinQueueUiState == JoinQueueUiState.Loading && linkedQueue != null) {
+                                    FloatingActionButton(
+                                        onClick = {},
+                                        containerColor = colorResource(id = R.color.disabled_red),
+                                        contentColor = colorResource(id = R.color.disabled_text_grey),
+                                    ) {
 
-                                    Row() {
-                                        //while request in progress, display spinner icon
-                                        CircularProgressIndicator(
-                                            color = colorResource(id = R.color.disabled_text_grey),
-                                            modifier = Modifier
-                                                .padding(start = 8.dp)
-                                                .size(24.dp)
-                                        )
+                                        Row() {
+                                            //while request in progress, display spinner icon
+                                            CircularProgressIndicator(
+                                                color = colorResource(id = R.color.disabled_text_grey),
+                                                modifier = Modifier
+                                                    .padding(start = 8.dp)
+                                                    .size(24.dp)
+                                            )
 
-                                        Text(
-                                            text = stringResource(id = R.string.leave_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                            Text(
+                                                text = stringResource(id = R.string.leave_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
-                            }
 
-                            //else user is not in queue and join/leave is not in progress
-                            else {
-                                FloatingActionButton(
-                                    onClick = {
-                                        mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                                        mainViewModel.postJoinAttractionQueue(attraction.id,)
-                                        lastRequest = "Join"
-                                    },
-                                    containerColor = colorResource(id = R.color.baby_blue),
-                                    contentColor = colorResource(id = R.color.white),
-                                ) {
+                                //else user is not in queue and join/leave is not in progress
+                                else {
+                                    FloatingActionButton(
+                                        onClick = {
+                                            mainViewModel.joinQueueUiState =
+                                                JoinQueueUiState.Loading
+                                            mainViewModel.postJoinAttractionQueue(attraction.id)
+                                            lastRequest = "Join"
+                                        },
+                                        containerColor = colorResource(id = R.color.baby_blue),
+                                        contentColor = colorResource(id = R.color.white),
+                                    ) {
 
-                                    Row() {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = stringResource(id = R.string.join_queue_button),
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.join_queue_button),
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(start = 4.dp, end = 8.dp)
-                                        )
+                                        Row() {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = stringResource(id = R.string.join_queue_button),
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            )
+                                            Text(
+                                                text = stringResource(id = R.string.join_queue_button),
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 8.dp
+                                                )
+                                            )
 
+                                        }
                                     }
                                 }
                             }
@@ -296,15 +314,18 @@ fun AttractionScreen(
                     }
 
                     //alert for confirming queue leave
-                    if(leaveConfirmation){
+                    if (leaveConfirmation) {
                         AlertDialog(
                             onDismissRequest = { leaveConfirmation = false },
                             title = { Text(text = stringResource(id = R.string.leave_queue_confirmation_alert_title)) },
                             text = {
                                 Text(
-                                    text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attraction.name}? \n\n" + stringResource(id = R.string.leave_queue_confirmation_alert_desc_2),
-                                    textAlign = TextAlign.Center)
-                                   },
+                                    text = stringResource(id = R.string.leave_queue_confirmation_alert_desc_1) + " ${attraction.name}? \n\n" + stringResource(
+                                        id = R.string.leave_queue_confirmation_alert_desc_2
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+                            },
                             dismissButton = {
                                 TextButton(onClick = { leaveConfirmation = false }) {
                                     Text(text = stringResource(R.string.alert_cancel))
@@ -386,7 +407,7 @@ fun AttractionScreen(
                                         Text(stringResource(id = R.string.alert_okay))
                                     }
                                 },
-                                )
+                            )
                         }
 
                         else -> {}
@@ -654,7 +675,7 @@ fun queueTimeColour(time: Int): Color {
 @Preview(showBackground = true)
 @Composable
 fun AttractionDetailsPreview() {
-    val queue = QueueEntry(0,0, 150, "2024-04-21T12:03:24Z")
+    val queue = QueueEntry(0, 0, 150, "2024-04-21T12:03:24Z")
     QueueTheme {
         AttractionDetails(
             attraction =
