@@ -87,8 +87,6 @@ class MainViewModel(
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefreshing.asStateFlow()
 
-    private var isServiceStarted = false
-
     init{
         Log.i("ViewModel","MainViewModel Init")
         startAutoRefresh()
@@ -131,6 +129,7 @@ class MainViewModel(
 
     fun refreshData(){
         Log.i("ViewModel","Refresh Data Called")
+        _isRefreshing.value = true
         viewModelScope.launch {
             //waiting for both API requests to finish before checking queue times - https://stackoverflow.com/questions/58568592/how-to-wait-for-all-the-async-to-finish
             val attractionsDeferred = async{ getFacilityAttractions() }
@@ -140,6 +139,7 @@ class MainViewModel(
             queuesDeferred.await()
 
             checkQueueTimes()
+            _isRefreshing.value = false
         }
     }
 

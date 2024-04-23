@@ -147,7 +147,6 @@ fun AttractionScreen(
                         queuesUiState.userQueues.find { it.attractionId == attraction.id }
 
                     Scaffold(
-                        modifier = Modifier.pullRefresh(pullRefreshState),
                         topBar = {
                             QueueTopAppBar(
                                 title = stringResource(id = R.string.attraction_detail_button),
@@ -297,27 +296,27 @@ fun AttractionScreen(
 
                     ) { innerPadding ->
                         Box(
-                            //modifier = Modifier.pullRefresh(pullRefreshState)
+                            modifier = Modifier.pullRefresh(pullRefreshState).padding(innerPadding)
                         ) {
                             AttractionDetails(
                                 attraction = attraction,
                                 linkedQueue = linkedQueue,
                                 modifier = Modifier
-                                    .padding(innerPadding)
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                PullRefreshIndicator(
+                                    refreshing = isRefreshing,
+                                    state = pullRefreshState
+                                )
+                            }
                         }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            PullRefreshIndicator(
-                                refreshing = isRefreshing,
-                                state = pullRefreshState
-                            )
-                        }
+
                     }
                     if (showInfoDialogState.value) {
                         ShowInfoDialog(
