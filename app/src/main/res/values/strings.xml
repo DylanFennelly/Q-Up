@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Q-Up</string>
+    <string name="enter_facility_button">Enter Facility</string>
+    <string name="retry_button">Retry</string>
     <string name="home_title">Home</string>
     <string name="app_welcome">Welcome to Q-Up</string>
     <string name="setu_button">Enter SETU</string>
@@ -50,6 +52,8 @@
     <string name="permissions_notification_desc">Q-Up sends notifications with updates about queues and queue times.</string>
     <string name="permissions_Location_title">Location</string>
     <string name="permissions_Location_desc">Q-Up uses your location to calculate when to send you notifications to start moving towards an attraction. Both "Precise" and "Broad" location are permitted, but for best functionality, select "Precise". </string>
+    <string name="permissions_camera_title">Camera</string>
+    <string name="permissions_camera_desc">Q-Up needs to use the camera to scan your ticket. The camera is only used for scanning the ticket.</string>
     <string name="permissions_ask">Please press the button below and allow all permissions to continue to the application.</string>
     <string name="permissions_button">Check Permissions</string>
     <string name="permissions_denied">Permissions Denied</string>
@@ -59,4 +63,12 @@
     <string name="entrance_ticket_expired">Entrance ticket expired</string>
     <string name="entrance_ticket_button">View Entrance Ticket</string>
     <string name="entrance_ticket_title">Entrance Ticket</string>
+    <string name="camera_title">Scan Code</string>
+    <string name="camera_top">Scan the QR Code provided by the facility at entry or as part of your ticket to continue.</string>
+    <string name="generic_error">Something went wrong.</string>
+    <string name="ticket_error_460">This ticket is not active yet. Confirm the entry time in your booking and request assistance from facility staff if required.</string>
+    <string name="ticket_error_461">This ticket has expired. If you believe this to be an error, request assistance from facility staff.</string>
+    <string name="ticket_error_462">This ticket has already been activated. If you believe this to be an error, request assistance from facility staff.</string>
+    <string name="ticket_error_misc">Something went wrong. Exit this screen and try scanning your code again. If issues persist, request assistance from facility staff.</string>
+
 </resources>

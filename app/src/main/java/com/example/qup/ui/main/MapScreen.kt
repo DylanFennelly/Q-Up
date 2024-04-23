@@ -51,7 +51,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
-import com.example.qup.RefreshService
 import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
@@ -88,21 +87,14 @@ fun MapScreen(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
     navController: NavController = rememberNavController(),
-    facilityName: String,
     mapLatLng: LatLng,
     mapZoom: Float,
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState
 ){
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
-    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, refreshThreshold = 80.dp, onRefresh = { mainViewModel.refreshData() })
     val context = LocalContext.current
-
-
-    //Starting the refresh service:
-    LaunchedEffect(0) {     //TODO: hardcoded userId
-        //mainViewModel.startServiceIfNotStarted(context,0)
-    }
 
     Scaffold(
         topBar = {

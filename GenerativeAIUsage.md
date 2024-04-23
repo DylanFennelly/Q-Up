@@ -1140,6 +1140,322 @@ Finally, ensure your AndroidManifest.xml includes the necessary permissions, esp
 This setup will prompt the user for all necessary permissions at once when the button is clicked, and you will be able to handle the result in the callback of the requestMultiplePermissionsLauncher.
 ```
 
+## Generative AI Usage 7.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to help error handle Retrofit request.
+
+#### Chat log:
+```
+User:
+
+How can I make it so retrofit doesnt crash when it receives a bad status code (e.g. 404)?
+
+ChatGPT:
+For the simplest approach to handling HTTP errors like 404 in Retrofit without your application crashing, you can use the basic Retrofit error handling mechanism provided within the onResponse callback. Here's how you can do it in a straightforward way:
+
+    Create your Retrofit instance and your service interface. (I assume you already have this set up, but just for completeness):
+
+    java
+
+Retrofit retrofit = new Retrofit.Builder()
+    .baseUrl("https://your.api/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build();
+
+YourApiService service = retrofit.create(YourApiService.class);
+
+Make an API call and handle responses in onResponse. Check if the response is successful or not, and handle accordingly:
+
+java
+
+    Call<YourResponseClass> call = service.getYourData();
+    call.enqueue(new Callback<YourResponseClass>() {
+        @Override
+        public void onResponse(Call<YourResponseClass> call, Response<YourResponseClass> response) {
+            if (response.isSuccessful()) {
+                // Handle successful response
+                YourResponseClass data = response.body();  // Your successful response
+                // Process your data
+            } else {
+                // Handle all other responses (e.g., 404, 500)
+                // This prevents the app from crashing due to non-2XX responses
+                int statusCode = response.code();
+                // You can log or display an error message based on statusCode
+                Log.e("API Error", "Status Code: " + statusCode);
+            }
+        }
+
+        @Override
+        public void onFailure(Call<YourResponseClass> call, Throwable t) {
+            // Handle failure like network error, parsing error etc.
+            Log.e("API Call Failure", t.getMessage());
+        }
+    });
+
+This method is the easiest and most direct way to handle different HTTP status codes using Retrofit. It doesn't crash your app and logs the error, helping in the debugging process or simply informing the user that something went wrong.
+
+
+User:
+
+I am using Kotlin, not Java
+
+
+ChatGPT:
+
+Alright, if you're using Kotlin, you can handle API errors gracefully with Retrofit in a very similar way. Here's a simplified example tailored to Kotlin syntax:
+1. Set Up Your Retrofit Instance and API Service Interface
+
+Ensure you have Retrofit set up with an interface for your API endpoints:
+
+kotlin
+
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://your.api/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+
+interface ApiService {
+    @GET("endpoint")
+    fun fetchData(): Call<YourDataType>
+}
+
+2. Make an API Call and Handle Different HTTP Responses
+
+Here’s how you would make an API call and manage responses, including handling errors like 404, in Kotlin:
+
+kotlin
+
+val service = retrofit.create(ApiService::class.java)
+val call = service.fetchData()
+
+call.enqueue(object : Callback<YourDataType> {
+    override fun onResponse(call: Call<YourDataType>, response: Response<YourDataType>) {
+        if (response.isSuccessful) {
+            // This block handles the successful HTTP response (2XX)
+            val data = response.body()  // Your successful response body
+            // Process your data
+        } else {
+            // This block handles all other HTTP responses (e.g., 404, 500)
+            // Use response.code() to handle different HTTP status codes
+            val statusCode = response.code()
+            when(statusCode) {
+                404 -> Log.e("API Error", "Not Found")
+                else -> Log.e("API Error", "Unhandled status code: $statusCode")
+            }
+        }
+    }
+
+    override fun onFailure(call: Call<YourDataType>, t: Throwable) {
+        // This block handles failures like network errors, serialization errors, etc.
+        Log.e("API Call Failure", t.message ?: "Unknown error")
+    }
+})
+
+Key Points:
+
+    Error Handling in onResponse: The onResponse function checks if the response is successful using response.isSuccessful. If not, it handles different status codes appropriately.
+    Use of Callbacks: Kotlin's use of an anonymous object for the Callback interface provides a clean way to handle both success and error cases.
+    Logging Errors: The example uses Log.e to output error information, which you can replace with user-facing error messages or other handling logic as needed.
+
+This Kotlin example provides a straightforward way to handle various HTTP responses using Retrofit without crashing your application. It keeps your API interactions robust and user-friendly.
+
+
+User:
+
+The way the API calls are setup in my app, I dont have direct access to the service.
+
+When I make the API call i want to error handle, its called through a FacilityRepository, defined as such:
+"package com.example.qup.data
+
+import com.example.qup.network.FacilityApiService
+
+//middle-man between data and application
+interface FacilityRepository {
+    suspend fun getAttractions(url: String): GetAttractionsApiResponse
+    suspend fun joinQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
+    suspend fun getUserQueues(url: String, userId: Int): List<QueueEntry>
+    suspend fun leaveQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse
+    suspend fun updateQueueCallNum(url: String, body: UpdateCallNumBody): UpdateCallNumApiResponse
+    suspend fun getUserId(url: String): UserIdApiResponse
+}
+
+class NetworkFacilityRepository(private val facilityApiService: FacilityApiService): FacilityRepository{
+    override suspend fun getAttractions(url: String): GetAttractionsApiResponse = facilityApiService.getAttractions(url)
+    override suspend fun joinQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse = facilityApiService.joinQueue(url, body)
+    override suspend fun getUserQueues(url: String, userId: Int): List<QueueEntry>  = facilityApiService.getUserQueues(url, userId)
+    override suspend fun leaveQueue(url: String, body: JoinLeaveQueueBody): JoinLeaveQueueApiResponse  = facilityApiService.leaveQueue(url, body)
+    override suspend fun updateQueueCallNum(url: String, body: UpdateCallNumBody): UpdateCallNumApiResponse = facilityApiService.updateQueueCallNum(url, body)
+    override suspend fun getUserId(url: String): UserIdApiResponse = facilityApiService.getUserId(url)
+}"
+
+The retrofit service is included as a value when the NetworkFacilityRespository is initialised
+
+
+ChatGPT:
+
+Given the structure of your FacilityRepository and NetworkFacilityRepository, where API interactions are abstracted away, the error handling for different HTTP responses can be efficiently managed within the repository layer. This way, you encapsulate all network-related error handling, making the rest of your application code cleaner and more focused on business logic.
+Step-by-Step Guide for Error Handling in Repository
+
+    Modify the API Service to Return Response<T>:
+    Modify your Retrofit interface to return Response<T> instead of directly returning the data object. This allows you to handle HTTP response codes directly within your repository.
+
+    kotlin
+
+interface FacilityApiService {
+    @GET
+    suspend fun getAttractions(@Url url: String): Response<GetAttractionsApiResponse>
+    // Define other methods similarly to return Response<>
+}
+
+Handle Success and Errors in the Repository Layer:
+In your NetworkFacilityRepository, you can now check the response and handle errors accordingly.
+
+kotlin
+
+class NetworkFacilityRepository(private val facilityApiService: FacilityApiService): FacilityRepository {
+    override suspend fun getAttractions(url: String): GetAttractionsApiResponse {
+        val response = facilityApiService.getAttractions(url)
+        if (response.isSuccessful) {
+            return response.body() ?: throw Exception("No data received")
+        } else {
+            throw Exception("Error fetching data: ${response.code()} ${response.message()}")
+        }
+    }
+    // Apply similar logic to other methods
+}
+
+Using Try-Catch for Error Propagation:
+When you call these repository methods from your view models or use cases, use try-catch blocks to handle exceptions, allowing you to react to errors (e.g., display error messages, log errors).
+
+kotlin
+
+viewModelScope.launch {
+    try {
+        val attractions = facilityRepository.getAttractions("your_url")
+        // Use attractions in your UI
+    } catch (e: Exception) {
+        // Handle error, update UI accordingly
+        _state.value = UIState.Error(e.message ?: "Unknown error")
+    }
+}
+
+Improving Error Handling with Custom Exceptions:
+To provide more granular control over error handling, consider defining custom exceptions for different types of errors. This helps differentiate between network issues, data parsing errors, and API-specific problems.
+
+kotlin
+
+    class DataFetchException(message: String): Exception(message)
+    class NetworkException(message: String): Exception(message)
+    class ApiException(message: String): Exception(message)
+
+    // In your repository
+    throw ApiException("Error ${response.code()}: ${response.message()}")
+
+Benefits of This Approach
+
+    Centralized Error Handling: By handling errors at the repository level, you ensure that all network-related errors are managed in one place. This reduces redundancy and makes maintenance easier.
+    Cleaner Architecture: Your view models remain clean and focused on handling UI logic and state management. They only need to handle exceptions thrown by the repository, not the specifics of HTTP error codes.
+    Scalability and Maintenance: With custom exceptions and clear error handling logic, it's easier to update and maintain the code as your application scales.
+
+By structuring your error handling in this manner, you ensure that your Kotlin application can gracefully handle various network errors without crashing, improving the robustness and user experience of your app.
+
+
+User:
+
+I want to, after the request fails, display a different message in a Compose view based on the response code. How can I throw the Exception in a way that the reponseCode can be access by the UiState.Error that is recieving it can have the responseCode?
+
+
+ChatGPT:
+
+To display different messages in your Compose UI based on the response code, you can customize how you throw exceptions in your repository and how these are handled in your ViewModel to update the UI accordingly.
+
+Here's a step-by-step approach to implement this:
+1. Define a Custom Exception Class
+
+Create a custom exception class that includes the response code so that it can be used in the UI to determine the error message.
+
+kotlin
+
+class ApiException(val code: Int, message: String): Exception(message)
+
+2. Modify the Repository to Use the Custom Exception
+
+When you handle errors in your repository, throw your custom ApiException, including the status code and a relevant message.
+
+kotlin
+
+class NetworkFacilityRepository(private val facilityApiService: FacilityApiService) : FacilityRepository {
+    override suspend fun getAttractions(url: String): GetAttractionsApiResponse {
+        val response = facilityApiService.getAttractions(url)
+        if (response.isSuccessful) {
+            return response.body() ?: throw IllegalStateException("No response body")
+        } else {
+            throw ApiException(response.code(), "Error fetching attractions: ${response.message()}")
+        }
+    }
+}
+
+3. Update ViewModel to Handle Custom Exception
+
+In your ViewModel, handle this exception in your coroutine block. When catching the ApiException, update your UI state accordingly.
+
+kotlin
+
+class MyViewModel : ViewModel() {
+    private val _uiState = mutableStateOf<UIState>(UIState.Success)
+    val uiState: State<UIState> = _uiState
+
+    fun fetchAttractions(url: String) {
+        viewModelScope.launch {
+            try {
+                val data = facilityRepository.getAttractions(url)
+                _uiState.value = UIState.Success(data)
+            } catch (e: ApiException) {
+                _uiState.value = UIState.Error(e.message, e.code)
+            } catch (e: Exception) {
+                _uiState.value = UIState.Error("Unknown error occurred", null)
+            }
+        }
+    }
+}
+
+sealed class UIState {
+    data class Success(val data: Any): UIState()
+    data class Error(val message: String, val code: Int?): UIState()
+}
+
+4. Use the Error Code in Compose UI
+
+In your Compose UI, you can now use the error code to display different messages or perform different actions based on the code.
+
+kotlin
+
+@Composable
+fun AttractionsScreen(viewModel: MyViewModel) {
+    val state = viewModel.uiState.value
+    when (state) {
+        is UIState.Success -> {
+            // Display attractions
+        }
+        is UIState.Error -> {
+            Text("Error: ${state.message}")
+            if (state.code != null) {
+                when(state.code) {
+                    404 -> Text("Attractions not found.")
+                    500 -> Text("Server error, please try again later.")
+                    else -> Text("An unexpected error occurred.")
+                }
+            }
+        }
+    }
+}
+
+Conclusion
+
+By using a custom exception that includes the response code, your ViewModel can pass detailed error information to your Compose UI, allowing it to react appropriately to different scenarios. This approach helps maintain a clean separation of concerns, with your UI logic depending solely on the state provided by the ViewModel.
+```
+
 
 
 

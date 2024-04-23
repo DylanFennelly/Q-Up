@@ -4,6 +4,11 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -16,6 +21,9 @@ import com.example.qup.ui.home.HomeDestination
 import com.example.qup.ui.home.HomeScreen
 import com.example.qup.ui.attraction.AttractionDestination
 import com.example.qup.ui.attraction.AttractionScreen
+import com.example.qup.ui.camera.CameraDestination
+import com.example.qup.ui.camera.CameraScreen
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.main.ListDestination
 import com.example.qup.ui.main.ListScreen
 import com.example.qup.ui.main.MainViewModel
@@ -28,6 +36,9 @@ import com.example.qup.ui.main.QueuesScreen
 import com.example.qup.ui.ticket.TicketDestination
 import com.example.qup.ui.ticket.TicketScreen
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 //Defines navigation destinations for app views
 //NavGraph and NavigationDestination code reference: John Rellis, Lab-Room InventoryApp, Mobile App Development 1, South East Technological University
@@ -37,8 +48,9 @@ fun AppNavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     //same view model for multiple screens -> initialise once, pass into screens
-    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)        //TODO: possibly move? idk how many standards im violating by initialising here
+    mainViewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val scope = rememberCoroutineScope()
     NavHost(
         navController = navController,
         startDestination = HomeDestination.route,
@@ -47,20 +59,35 @@ fun AppNavGraph(
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToMap = {
-                    mainViewModel.setFacilityName(it)
-                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
+                    mainViewModel.refreshData()
+                    navController.navigate(MapDestination.route)
+
+                },
+                navigateToCamera = {
+                    navController.navigate(CameraDestination.route)
+                },
+                navigateToPermissions = {navController.navigate(PermissionsDestination.route)},
+                mainViewModel = mainViewModel
+            )
+        }
+
+        composable(route = CameraDestination.route) {
+            CameraScreen(
+                onNavigateUp = {
+                    navController.navigate(HomeDestination.route)
+                },
+                navigateToMap = {
+                    mainViewModel.refreshData()
                     navController.navigate(MapDestination.route)
                 },
-                navigateToPermissions = {navController.navigate(PermissionsDestination.route)}
+                mainViewModel = mainViewModel
             )
         }
 
         composable(route = PermissionsDestination.route) {
             PermissionsScreen(
-                navigateToMap = {
-                    mainViewModel.setFacilityName(it)
-                    mainViewModel.refreshData(0) //TODO: hardcoded user ID
-                    navController.navigate(MapDestination.route)
+                navigateToHome = {
+                    navController.navigate(HomeDestination.route)
                 },
                 onNavigateUp = { navController.popBackStack() })
         }
@@ -68,30 +95,43 @@ fun AppNavGraph(
         composable(
             route = MapDestination.route,
         ) {
-            //hardcoded; for some reason, it just will not read in the data directly from the data object.
-            val mapLocation = LatLng(52.245866910002846, -7.138898812594175)
+            val lat = remember { mutableDoubleStateOf(0.0) }
+            val lng = remember { mutableDoubleStateOf(0.0) }
+
+            LaunchedEffect(true) {
+                lat.doubleValue = mainViewModel.mapLat.first()
+                lng.doubleValue = mainViewModel.mapLng.first()
+            }
+            val mapLocation = LatLng(lat.doubleValue, lng.doubleValue)
             val mapZoom = 16f
 
-            MapScreen(
-                onNavigateUp = {
-                    navController.navigate(HomeDestination.route)
-                },
-                facilityName = mainViewModel.getFacilityName(),
-                mapLatLng = mapLocation,
-                mapZoom = mapZoom,
-                navigateToList = {
-                    navController.navigate(ListDestination.route)
-                },
-                navigateToQueues = {
-                    navController.navigate(QueuesDestination.route)
-                },
-                mainViewModel = mainViewModel,
-                mainUiState = mainViewModel.mainUiState,
-                queuesUiState = mainViewModel.queuesUiState,
-                navigateToAttraction = {
-                    navController.navigate("${AttractionDestination.route}/${it}")
-                }
-            )
+            //only create map if values have been updated
+            if (lat.doubleValue != 0.0 && lng.doubleValue != 0.0) {
+                MapScreen(
+                    onNavigateUp = {
+                        navController.navigate(HomeDestination.route)
+                    },
+                    mapLatLng = mapLocation,
+                    mapZoom = mapZoom,
+                    navigateToList = {
+                        navController.navigate(ListDestination.route)
+                    },
+                    navigateToQueues = {
+                        navController.navigate(QueuesDestination.route)
+                    },
+                    mainViewModel = mainViewModel,
+                    mainUiState = mainViewModel.mainUiState,
+                    queuesUiState = mainViewModel.queuesUiState,
+                    navigateToAttraction = {
+                        navController.navigate("${AttractionDestination.route}/${it}")
+                    }
+                )
+            }else{
+                RequestLoading()
+            }
+
+
+
 
         }
 
@@ -102,7 +142,6 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(MapDestination.route)
                 },
-                facilityName = mainViewModel.getFacilityName(),
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
@@ -124,7 +163,6 @@ fun AppNavGraph(
                 onNavigateUp = {
                     navController.navigate(MapDestination.route)
                 },
-                facilityName = mainViewModel.getFacilityName(),
                 navigateToMap = {
                     navController.navigate(MapDestination.route)
                 },
@@ -145,7 +183,7 @@ fun AppNavGraph(
             arguments = listOf(navArgument(AttractionDestination.attractionID) {
                 type = NavType.IntType
             })
-        ) {backStackEntry ->
+        ) {backStackEntry -> //Generative AI Usage 1.
             //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
             //Log.i("ViewModel", "attractionId: ${attractionId}")
             //if (attractionId != null) {
@@ -174,9 +212,6 @@ fun AppNavGraph(
                 },
             )
         ) {backStackEntry ->
-            //val attractionId = backStackEntry.arguments?.getString(AttractionDestination.attractionID)
-            //Log.i("ViewModel", "attractionId: ${attractionId}")
-            //if (attractionId != null) {
             TicketScreen(
                 backStackEntry = backStackEntry,
                 onNavigateUp = {
@@ -188,31 +223,8 @@ fun AppNavGraph(
                 navigateToList = {
                     navController.navigate(ListDestination.route)
                 },
+                mainViewModel = mainViewModel
             )
-            //}
         }
     }
 }
-        //keeping as example of route with args
-//        composable(
-//            route = ListDestination.routeWithArgs,
-//            arguments = listOf(navArgument(ListDestination.facility){
-//                type = NavType.StringType
-//            })
-//        ){backStackEntry ->            //Generative AI Usage 1.
-//            val facilityName = backStackEntry.arguments?.getString(ListDestination.facility)
-//
-//            if (facilityName != null) {
-//                ListScreen(
-//                    onNavigateUp = {
-//                        navController.navigate("${MapDestination.route}/${it}")
-//                    },
-//                    facilityName = facilityName,
-//                    navigateToMap = {
-//                        navController.navigate("${MapDestination.route}/${it}")
-//                    },
-//                    mainViewModel = mainViewModel,
-//                    listUiState = mainViewModel.mainUiState
-//                )
-//            }
-//        }

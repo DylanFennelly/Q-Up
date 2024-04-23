@@ -40,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,6 +58,8 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.navigation.NavigationDestination
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 object QueuesDestination : NavigationDestination {
     override val route = "queues"
@@ -74,7 +77,6 @@ fun QueuesScreen(
     navigateToAttraction: (Int) -> Unit,
     navigateToTicket: (Int, Int) -> Unit,
     mainViewModel: MainViewModel,
-    facilityName: String,
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState
 ) {
@@ -83,7 +85,7 @@ fun QueuesScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         refreshThreshold = 80.dp,
-        onRefresh = { mainViewModel.refreshData(0) })  //TODO: hardcoded user ID
+        onRefresh = { mainViewModel.refreshData() })
 
     var leaveConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -160,7 +162,8 @@ fun QueuesScreen(
                                     modifier = Modifier
                                         .padding(innerPadding)
                                         .fillMaxSize()
-                                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                        .nestedScroll(scrollBehavior.nestedScrollConnection),
+                                    mainViewModel = mainViewModel
                                 )
                             }else{
                                 Column(modifier = Modifier
@@ -240,12 +243,14 @@ fun QueuesListBody(
     toggleLeaveConfirmation: () -> Unit,
     toggleHasLeftConfirmation: () -> Unit,
     setAttractionName: (String) -> Unit,
-    setAttractionId: (Int) -> Unit
+    setAttractionId: (Int) -> Unit,
+    mainViewModel: MainViewModel
 ) {
     LazyColumn {
 
         items(queues) { queue ->
             val linkedAttraction = attractions.find { it.id == queue.attractionId }
+            val scope = rememberCoroutineScope()
 
             //if user somehow in queue for non-existent attractionId, skip it
             if (linkedAttraction != null) {
@@ -303,7 +308,10 @@ fun QueuesListBody(
                             Row(modifier= Modifier.padding(8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                                 Button(
                                     onClick = {
-                                        navigateToTicket(queue.attractionId, 0)     //TODO: hardcoded user ID
+                                        scope.launch {
+                                            val userId = mainViewModel.userId.first()
+                                            navigateToTicket(queue.attractionId, userId)
+                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = colorResource(
@@ -482,7 +490,7 @@ fun LeaveQueueConfirmAlert(
             TextButton(onClick = {
                 toggleLeaveConfirmation()
                 mainViewModel.joinQueueUiState = JoinQueueUiState.Loading
-                mainViewModel.postLeaveAttractionQueue(attractionId, 0) //TODO: hardcoded user ID
+                mainViewModel.postLeaveAttractionQueue(attractionId)
                 toggleHasLeftConfirmation()
             }
             ) {
@@ -501,7 +509,7 @@ fun HasLeftAlert(
     ) {
     AlertDialog(
         onDismissRequest = {
-            mainViewModel.refreshData(0)
+            mainViewModel.refreshData()
             mainViewModel.joinQueueUiState =
                 JoinQueueUiState.Idle
             toggleHasLeftConfirmation()
@@ -515,7 +523,7 @@ fun HasLeftAlert(
         },
         confirmButton = {
             TextButton(onClick = {
-                mainViewModel.refreshData(0)
+                mainViewModel.refreshData()
                 mainViewModel.joinQueueUiState =
                     JoinQueueUiState.Idle
                 toggleHasLeftConfirmation()
