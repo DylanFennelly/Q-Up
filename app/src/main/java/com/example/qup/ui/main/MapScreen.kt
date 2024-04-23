@@ -16,12 +16,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -36,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +54,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -106,6 +113,7 @@ fun MapScreen(
     mapZoom: Float,
     mainUiState: MainUiState,
     queuesUiState: QueuesUiState,
+    facilityName: String
 ) {
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(
@@ -173,7 +181,8 @@ fun MapScreen(
                                 queues = queuesUiState.userQueues,
                                 latLng = mapLatLng,
                                 zoom = mapZoom,
-                                onItemClick = navigateToAttraction
+                                onItemClick = navigateToAttraction,
+                                facilityName = facilityName
                             )
                         }
 
@@ -185,9 +194,9 @@ fun MapScreen(
                 is MainUiState.Error ->
                     InternetError(mainViewModel = mainViewModel)
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)
-            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)
         }
     }
 }
@@ -199,6 +208,8 @@ fun MapBody(
     latLng: LatLng,
     zoom: Float,
     onItemClick: (Int) -> Unit,
+    facilityName: String,
+    modifier: Modifier = Modifier
 ) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLng, zoom)
@@ -212,7 +223,20 @@ fun MapBody(
     val mapStyle: MapStyleOptions? = loadMapStyle(context)
 
 
-    Column {
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "Welcome to",
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp, bottom = 4.dp, top = 12.dp)
+        )
+        Text(
+            text = facilityName,
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp, bottom = 16.dp)
+        )
+
         GoogleMap(
             modifier = Modifier,
             cameraPositionState = cameraPositionState,
@@ -224,13 +248,14 @@ fun MapBody(
                 val attractionLatLng = LatLng(attraction.lat, attraction.lng)
 
                 //Generate AI Usage 8.
-                val mapIconBitMap = BitmapFactory.decodeResource(context.resources, R.drawable.map_marker)
+                val mapIconBitMap =
+                    BitmapFactory.decodeResource(context.resources, R.drawable.map_marker)
                 val scaledBitmap = Bitmap.createScaledBitmap(mapIconBitMap, 115, 115, false)
                 val mapIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
 
                 MarkerInfoWindow(
                     state = MarkerState(attractionLatLng),
-                    icon =  mapIcon,
+                    icon = mapIcon,
                     onInfoWindowClick = {
                         // fixes an issue with the app freezing - https://stackoverflow.com/questions/72561687/google-maps-in-jetpack-compose-freezes
                         coroutineScope.launch { onItemClick(attraction.id) }
@@ -375,7 +400,9 @@ fun ShowInfoDialog(
             color = colorResource(id = R.color.light_baby_blue)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(

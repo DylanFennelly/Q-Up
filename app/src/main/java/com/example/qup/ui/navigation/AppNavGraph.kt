@@ -102,16 +102,18 @@ fun AppNavGraph(
         ) {
             val lat = remember { mutableDoubleStateOf(0.0) }
             val lng = remember { mutableDoubleStateOf(0.0) }
+            val facilityName =  remember { mutableStateOf("") }
 
             LaunchedEffect(true) {
                 lat.doubleValue = mainViewModel.mapLat.first()
                 lng.doubleValue = mainViewModel.mapLng.first()
+                facilityName.value = mainViewModel.facilityName.first()
             }
             val mapLocation = LatLng(lat.doubleValue, lng.doubleValue)
             val mapZoom = 16f
 
             //only create map if values have been updated
-            if (lat.doubleValue != 0.0 && lng.doubleValue != 0.0) {
+            if (lat.doubleValue != 0.0 && lng.doubleValue != 0.0 && facilityName.value != "") {
                 MapScreen(
                     onNavigateUp = {
                         navController.navigate(HomeDestination.route)
@@ -130,7 +132,8 @@ fun AppNavGraph(
                     queuesUiState = mainViewModel.queuesUiState,
                     navigateToAttraction = {
                         navController.navigate("${AttractionDestination.route}/${it}")
-                    }
+                    },
+                    facilityName = facilityName.value
                 )
             }else{
                 RequestLoading()
