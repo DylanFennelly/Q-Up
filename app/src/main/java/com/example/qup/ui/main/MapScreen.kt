@@ -206,7 +206,7 @@ fun MapBody(
         GoogleMap(
             modifier = Modifier,
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(mapStyleOptions = mapStyle)
+            properties = MapProperties(mapStyleOptions = mapStyle, isMyLocationEnabled = true),
         ) {
             for (attraction in attractions) {
                 val linkedQueue = queues.find { it.attractionId == attraction.id }
