@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -30,22 +29,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.qup.R
-import com.example.qup.helpers.sendNotification
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
-import com.example.qup.ui.theme.QueueTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 object HomeDestination : NavigationDestination {
@@ -220,7 +215,7 @@ fun HomeScreen(
                 }
 
                 is HomeUiState.InternetError -> {
-                    InternetError(scope =scope, mainViewModel =  mainViewModel, homeViewModel = homeViewModel)
+                    HomeInternetError(scope =scope, mainViewModel =  mainViewModel, homeViewModel = homeViewModel)
                 }
 
             }
@@ -268,9 +263,9 @@ fun HomeBody(
 }
 
 @Composable
-fun InternetError(modifier: Modifier = Modifier, scope: CoroutineScope, mainViewModel: MainViewModel, homeViewModel: HomeViewModel){
+fun HomeInternetError(modifier: Modifier = Modifier, scope: CoroutineScope, mainViewModel: MainViewModel, homeViewModel: HomeViewModel){
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

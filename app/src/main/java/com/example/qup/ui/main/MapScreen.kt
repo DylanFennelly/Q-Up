@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -63,6 +64,7 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.attraction.queueTimeColour
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -147,10 +149,10 @@ fun MapScreen(
                 )
             }
             when (mainUiState) {
-                is MainUiState.Loading -> MapLoading()
+                is MainUiState.Loading -> RequestLoading()
                 is MainUiState.Success -> {
                     when (queuesUiState) {
-                        is QueuesUiState.Loading -> MapError()
+                        is QueuesUiState.Loading -> RequestLoading()
                         is QueuesUiState.Success -> {
                             MapBody(
                                 attractions = mainUiState.attractions,
@@ -161,11 +163,13 @@ fun MapScreen(
                             )
                         }
 
-                        is QueuesUiState.Error -> MapError()
+                        is QueuesUiState.Error ->
+                            InternetError(mainViewModel = mainViewModel)
                     }
                 }
 
-                is MainUiState.Error -> MapError()
+                is MainUiState.Error ->
+                    InternetError(mainViewModel = mainViewModel)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)
@@ -312,18 +316,9 @@ fun MapBody(
 }
 
 @Composable
-fun MapLoading(modifier: Modifier = Modifier) {
-    Image(
-        modifier = modifier.size(200.dp),
-        painter = painterResource(R.drawable.loading_img),
-        contentDescription = stringResource(R.string.loading)
-    )
-}
-
-@Composable
-fun MapError(modifier: Modifier = Modifier) {
+fun InternetError(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -335,6 +330,15 @@ fun MapError(modifier: Modifier = Modifier) {
             text = stringResource(R.string.loading_failed),
             modifier = Modifier.padding(16.dp)
         )
+        Button(
+            onClick = {
+                mainViewModel.mainUiState = MainUiState.Loading
+                mainViewModel.refreshData()
+            },
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.baby_blue))
+        ) {
+            Text(text = stringResource(R.string.retry_button))
+        }
     }
 }
 

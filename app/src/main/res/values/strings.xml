@@ -16,7 +16,7 @@
     <string name="map_button">Facility Map</string>
     <string name="queues_button">Your Queues</string>
     <string name="loading">Loading...</string>
-    <string name="loading_failed">Failed to load result. Check internet connection and try again.</string>
+    <string name="loading_failed">Failed to load result. Check internet connection and try again. If issues persists, request assistance from facility staff.</string>
     <string name="attraction_name_label">Name</string>
     <string name="attraction_type_label">Type</string>
     <string name="attraction_status_label">Status</string>

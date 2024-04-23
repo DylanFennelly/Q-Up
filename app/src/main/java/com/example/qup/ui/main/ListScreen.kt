@@ -47,6 +47,7 @@ import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
 import kotlin.math.log
@@ -93,10 +94,10 @@ fun ListScreen(
             .pullRefresh(pullRefreshState)
         ) {
             when(listUiState){
-                is MainUiState.Loading -> ListLoading()
+                is MainUiState.Loading -> RequestLoading()
                 is MainUiState.Success -> {
                     when (queuesUiState) {
-                        is QueuesUiState.Loading -> ListLoading()
+                        is QueuesUiState.Loading -> RequestLoading()
                         is QueuesUiState.Success -> {
                             ListBody(
                                 attractions = listUiState.attractions,
@@ -108,10 +109,10 @@ fun ListScreen(
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                             )
                         }
-                        is QueuesUiState.Error -> ListError()
+                        is QueuesUiState.Error -> InternetError(mainViewModel = mainViewModel)
                     }
                 }
-                is MainUiState.Error -> ListError()
+                is MainUiState.Error -> InternetError(mainViewModel = mainViewModel)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState )
@@ -227,15 +228,6 @@ fun AttractionItem(
             }
         }
     }
-}
-
-@Composable
-fun ListLoading(modifier: Modifier = Modifier){
-    Image(
-        modifier = modifier.size(200.dp),
-        painter = painterResource(R.drawable.loading_img),
-        contentDescription = stringResource(R.string.loading)
-    )
 }
 
 @Composable

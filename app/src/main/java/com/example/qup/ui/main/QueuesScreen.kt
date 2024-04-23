@@ -58,6 +58,7 @@ import com.example.qup.data.Attraction
 import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.ui.attraction.queueTimeColour
+import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -145,13 +146,13 @@ fun QueuesScreen(
         ) {
             when (mainUiState) {
                 is MainUiState.Loading -> {
-                    ListLoading()
+                    RequestLoading()
                 }
 
                 is MainUiState.Success -> {
                     when (queuesUiState) {
                         is QueuesUiState.Loading -> {
-                            ListLoading()
+                            RequestLoading()
                         }
 
                         is QueuesUiState.Success -> {
@@ -199,15 +200,14 @@ fun QueuesScreen(
                             }
                         }
 
-                        is QueuesUiState.Error -> {
-                            ListError()
-                        }
+                        is QueuesUiState.Error ->
+                            InternetError(mainViewModel = mainViewModel)
                     }
                 }
 
-                is MainUiState.Error -> {
-                    ListError()
-                }
+                is MainUiState.Error ->
+                    InternetError(mainViewModel = mainViewModel)
+
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 PullRefreshIndicator(refreshing = isRefreshing, state = pullRefreshState)

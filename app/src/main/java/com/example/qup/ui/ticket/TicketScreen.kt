@@ -50,6 +50,7 @@ import com.example.qup.QueueBottomAppBar
 import com.example.qup.QueueTopAppBar
 import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.main.InternetError
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.navigation.NavigationDestination
 import kotlinx.coroutines.flow.first
@@ -131,7 +132,7 @@ fun TicketScreen(
                     }
                 }
                 is TicketUiState.Error ->{
-                    Text(text = "Error")
+                    InternetError(mainViewModel = mainViewModel)
                 }
             }
         }

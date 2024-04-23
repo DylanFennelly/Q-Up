@@ -63,9 +63,9 @@ import com.example.qup.data.QueueEntry
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.AppViewModelProvider
+import com.example.qup.ui.camera.RequestLoading
+import com.example.qup.ui.main.InternetError
 import com.example.qup.ui.main.JoinQueueUiState
-import com.example.qup.ui.main.ListError
-import com.example.qup.ui.main.ListLoading
 import com.example.qup.ui.main.MainUiState
 import com.example.qup.ui.main.MainViewModel
 import com.example.qup.ui.main.QueuesUiState
@@ -118,15 +118,19 @@ fun AttractionScreen(
     }
 
     when (attractionUiState) {
-        //TODO: add Loading and Error states
-        is MainUiState.Loading -> {}
-        is MainUiState.Error -> {}
+        is MainUiState.Loading -> {
+            RequestLoading()
+        }
+        is MainUiState.Error -> { InternetError(mainViewModel = mainViewModel)
+        }
         is MainUiState.Success -> {
 
             val attraction = attractionUiState.attractions[attractionId]
 
             when (queuesUiState) {
-                is QueuesUiState.Loading -> {}
+                is QueuesUiState.Loading -> {
+                    RequestLoading()
+                }
                 is QueuesUiState.Error -> {}
                 is QueuesUiState.Success -> {
 
@@ -385,7 +389,7 @@ fun AttractionScreen(
                                 )
                         }
 
-                        else -> {}
+                        else -> {InternetError(mainViewModel = mainViewModel)}
                     }
 
                 }

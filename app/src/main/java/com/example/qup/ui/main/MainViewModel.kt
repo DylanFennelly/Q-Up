@@ -72,10 +72,8 @@ class MainViewModel(
     val isDataUpdated: StateFlow<Boolean> = userDataUpdated.asStateFlow()
 
     var mainUiState: MainUiState by mutableStateOf(MainUiState.Loading)
-        private set
 
     var queuesUiState: QueuesUiState by mutableStateOf(QueuesUiState.Loading)
-        private set
 
     var joinQueueUiState: JoinQueueUiState by mutableStateOf(JoinQueueUiState.Idle)
 
