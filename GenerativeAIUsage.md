@@ -1456,6 +1456,83 @@ Conclusion
 By using a custom exception that includes the response code, your ViewModel can pass detailed error information to your Compose UI, allowing it to react appropriately to different scenarios. This approach helps maintain a clean separation of concerns, with your UI logic depending solely on the state provided by the ViewModel.
 ```
 
+## Generative AI Usage 8.
+
+#### Usage Overview:
+In this instance, ChatGPT 3.5 was used to assist with resizing a custom map icon.
+
+#### Chat log:
+```
+User:
+
+How can I change the size of the custom GoogleMap marker icon?
+
+
+ChatGPT:
+
+To change the size of a map marker icon in Google Maps when using Android's Google Maps API (including with Jetpack Compose), you typically need to resize the bitmap before creating a BitmapDescriptor from it. This involves modifying the drawable or bitmap resource programmatically before assigning it to the marker.
+
+Here’s a step-by-step guide on how to resize the icon:
+Step 1: Create a Utility Function to Resize the Bitmap
+
+First, you'll need a utility function that can resize a bitmap to the desired width and height. This function takes the context, the resource ID of the drawable, and the new size parameters:
+
+kotlin
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import androidx.core.graphics.drawable.DrawableCompat
+
+fun resizeMapIcons(context: Context, iconId: Int, width: Int, height: Int): BitmapDescriptor {
+    val imageBitmap = BitmapFactory.decodeResource(context.resources, iconId)
+    val scaledBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false)
+    return BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+}
+
+Step 2: Use the Function in Your ViewModel or Component
+
+Now, use this function when initializing your marker icon in the ViewModel or right before setting up the markers, adjusting the width and height to your needs.
+
+kotlin
+
+class MainViewModel : ViewModel() {
+    fun loadMapIcon(context: Context): BitmapDescriptor {
+        return resizeMapIcons(context, R.drawable.map_marker, 100, 100) // Set your desired size here
+    }
+}
+
+Step 3: Apply the Resized Icon to Your Marker
+
+When creating your markers, use the resized icon:
+
+kotlin
+
+val viewModel: MainViewModel = viewModel()
+val context = LocalContext.current
+val resizedIcon = viewModel.loadMapIcon(context)
+
+GoogleMap(
+    // Other parameters
+) {
+    Marker(
+        position = LatLng(37.4221, -122.0841), // Example position
+        icon = resizedIcon,
+        title = "Marker in Sydney",
+        snippet = "Description"
+    )
+}
+
+Additional Tips
+
+    Aspect Ratio: When resizing icons, consider maintaining the aspect ratio to prevent the icon from appearing stretched or compressed.
+    Performance: Resizing images can be computationally expensive. If you're placing many markers, consider resizing the icons beforehand and storing them, or use different icon sizes strategically based on the map zoom level.
+    Context Usage: Ensure that the context used for BitmapFactory.decodeResource is appropriate. It’s typically safe to use the application context for loading resources.
+
+By following these steps, you can control the size of your map marker icons in Google Maps within your Android application, making them suitable for different display sizes and resolutions.
+```
+
 
 
 

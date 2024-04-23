@@ -16,6 +16,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.qup.R
 import com.example.qup.ui.AppViewModelProvider
 import com.example.qup.ui.home.HomeDestination
 import com.example.qup.ui.home.HomeScreen
@@ -35,6 +36,7 @@ import com.example.qup.ui.main.QueuesDestination
 import com.example.qup.ui.main.QueuesScreen
 import com.example.qup.ui.ticket.TicketDestination
 import com.example.qup.ui.ticket.TicketScreen
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first

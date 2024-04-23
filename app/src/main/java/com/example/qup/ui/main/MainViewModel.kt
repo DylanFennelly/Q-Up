@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.qup.R
 import com.example.qup.data.FacilityRepository
 import com.example.qup.data.Attraction
 import com.example.qup.data.JoinLeaveQueueBody
@@ -20,6 +21,7 @@ import com.example.qup.data.UpdateCallNumBody
 import com.example.qup.data.UserRepository
 import com.example.qup.helpers.calculateEstimatedQueueTime
 import com.example.qup.helpers.sendNotification
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

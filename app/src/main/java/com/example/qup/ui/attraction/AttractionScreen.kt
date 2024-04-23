@@ -389,7 +389,7 @@ fun AttractionScreen(
                                 )
                         }
 
-                        else -> {InternetError(mainViewModel = mainViewModel)}
+                        else -> {}
                     }
 
                 }

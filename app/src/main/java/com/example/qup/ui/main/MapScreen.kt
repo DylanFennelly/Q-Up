@@ -3,6 +3,8 @@ package com.example.qup.ui.main
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -66,6 +68,8 @@ import com.example.qup.helpers.loadMapStyle
 import com.example.qup.ui.attraction.queueTimeColour
 import com.example.qup.ui.camera.RequestLoading
 import com.example.qup.ui.navigation.NavigationDestination
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -101,7 +105,7 @@ fun MapScreen(
     mapLatLng: LatLng,
     mapZoom: Float,
     mainUiState: MainUiState,
-    queuesUiState: QueuesUiState
+    queuesUiState: QueuesUiState,
 ) {
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val pullRefreshState = rememberPullRefreshState(
@@ -184,7 +188,7 @@ fun MapBody(
     queues: List<QueueEntry>,
     latLng: LatLng,
     zoom: Float,
-    onItemClick: (Int) -> Unit
+    onItemClick: (Int) -> Unit,
 ) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLng, zoom)
@@ -208,8 +212,15 @@ fun MapBody(
                 val linkedQueue = queues.find { it.attractionId == attraction.id }
                 //https://www.boltuix.com/2022/11/custom-info-window-on-map-marker-clicks.html
                 val attractionLatLng = LatLng(attraction.lat, attraction.lng)
+
+                //Generate AI Usage 8.
+                val mapIconBitMap = BitmapFactory.decodeResource(context.resources, R.drawable.map_marker)
+                val scaledBitmap = Bitmap.createScaledBitmap(mapIconBitMap, 115, 115, false)
+                val mapIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+
                 MarkerInfoWindow(
                     state = MarkerState(attractionLatLng),
+                    icon =  mapIcon,
                     onInfoWindowClick = {
                         // fixes an issue with the app freezing - https://stackoverflow.com/questions/72561687/google-maps-in-jetpack-compose-freezes
                         coroutineScope.launch { onItemClick(attraction.id) }
