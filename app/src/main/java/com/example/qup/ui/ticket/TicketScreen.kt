@@ -146,17 +146,19 @@ fun TicketBody(
 
     ){
     Column(
-        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 24.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "This is your entrance ticket",
+            text = stringResource(id = R.string.entrance_ticket_top),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom =  16.dp)
         )
         Text(
-            text = "Present this ticket at the attraction entrance to gain entry.",
+            text = stringResource(id = R.string.entrance_ticket_desc),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom =  16.dp)
@@ -177,7 +179,7 @@ fun TicketBody(
             )
         }
         Text(
-            text = "Important Information",
+            text = stringResource(id = R.string.entrance_ticket_important_info),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
         )
@@ -191,7 +193,7 @@ fun TicketBody(
                 modifier = Modifier.padding(end = 16.dp)
             )
             Text(
-                text = "Do not scan this ticket yourself. Doing so may cause you to lose your entrance ticket.",
+                text = stringResource(id = R.string.entrance_ticket_scan_info),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -206,7 +208,7 @@ fun TicketBody(
                 modifier = Modifier.padding(end = 16.dp)
             )
             Text(
-                text = "Ensure your screen brightness is sufficient for the QR code to be visible.",
+                text = stringResource(id = R.string.entrance_ticket_brightness_info),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )

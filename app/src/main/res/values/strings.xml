@@ -74,4 +74,10 @@
     <string name="exit_facility_alert_desc">Are you sure you want to exit the facility?</string>
     <string name="exit_facility_button">Exit Facility</string>
     <string name="exit_facility_and_reset_id_button">Exit Facility and Release User ID</string>
+    <string name="entrance_ticket_top">This is your entrance ticket</string>
+    <string name="entrance_ticket_desc">Present this ticket at the attraction entrance to gain entry.</string>
+    <string name="entrance_ticket_important_info">Important Information</string>
+    <string name="entrance_ticket_scan_info">Do not scan this ticket yourself. Doing so may cause you to lose your entrance ticket.</string>
+    <string name="entrance_ticket_brightness_info">Ensure your screen brightness is sufficient for the QR code to be visible.</string>
+
 </resources>

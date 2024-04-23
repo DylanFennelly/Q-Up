@@ -1,6 +1,8 @@
 package com.example.qup.ui.attraction
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -72,6 +74,7 @@ import com.example.qup.ui.main.QueuesUiState
 import com.example.qup.ui.main.statusColor
 import com.example.qup.ui.navigation.NavigationDestination
 import com.example.qup.ui.theme.QueueTheme
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -624,9 +627,12 @@ fun AttractionDetails(
                     GoogleMap(
                         cameraPositionState = cameraPositionState,
                         modifier = Modifier.height(225.dp),
-                        properties = MapProperties(mapStyleOptions = mapStyle)
+                        properties = MapProperties(mapStyleOptions = mapStyle, isMyLocationEnabled = true)
                     ) {
-                        Marker(state = MarkerState(LatLng(attraction.lat, attraction.lng))) {
+                        val mapIconBitMap = BitmapFactory.decodeResource(context.resources, R.drawable.map_marker)
+                        val scaledBitmap = Bitmap.createScaledBitmap(mapIconBitMap, 115, 115, false)
+                        val mapIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
+                        Marker(state = MarkerState(LatLng(attraction.lat, attraction.lng)), icon = mapIcon) {
 
                         }
                     }
