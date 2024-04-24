@@ -3,6 +3,7 @@ import './App.css';
 
 const logo = require('./logo_white.png');
 const poster = require('./20093427_fyp_poster_small.jpg');
+const report = require('./20093427_dylanfennelly_fyp_final_report.pdf')
 
 function App() {
   return (
@@ -45,14 +46,25 @@ function App() {
           <img className="Poster" src={String(poster)} alt='Logo'/>
         </a>
         <h3>Demo Video</h3>
-        {/* <a
+        <a
           className="App-link"
-          href="https://reactjs.org"
+          href="https://www.youtube.com/watch?v=Q6tVN1AfIZ8"
           target="_blank"
           rel="noopener noreferrer"
-        > */}
-          <h5>T.B.A.</h5>
-        {/* </a> */}
+        >
+          <h5>YouTube Link</h5>
+        </a>
+
+        <h3>Project Report</h3>
+        <a
+          className="App-link"
+          href={String(report)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <h5>Download Link</h5>
+        </a>
+
         <h3>Project Code Repository</h3>
         <a
           className="App-link"
