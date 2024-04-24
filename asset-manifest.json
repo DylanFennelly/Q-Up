@@ -1,17 +1,18 @@
 {
   "files": {
     "main.css": "/Q-Up/static/css/main.544fe516.css",
-    "main.js": "/Q-Up/static/js/main.0287e156.js",
+    "main.js": "/Q-Up/static/js/main.66bdc9a0.js",
     "static/js/592.18c9eb93.chunk.js": "/Q-Up/static/js/592.18c9eb93.chunk.js",
     "static/media/20093427_fyp_poster_small.jpg": "/Q-Up/static/media/20093427_fyp_poster_small.d826ef4c070e92183357.jpg",
+    "static/media/20093427_dylanfennelly_fyp_final_report.pdf": "/Q-Up/static/media/20093427_dylanfennelly_fyp_final_report.b4c3614c5919b7346e76.pdf",
     "static/media/logo_white.png": "/Q-Up/static/media/logo_white.f3cea89f4aef03e284d2.png",
     "index.html": "/Q-Up/index.html",
     "main.544fe516.css.map": "/Q-Up/static/css/main.544fe516.css.map",
-    "main.0287e156.js.map": "/Q-Up/static/js/main.0287e156.js.map",
+    "main.66bdc9a0.js.map": "/Q-Up/static/js/main.66bdc9a0.js.map",
     "592.18c9eb93.chunk.js.map": "/Q-Up/static/js/592.18c9eb93.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.544fe516.css",
-    "static/js/main.0287e156.js"
+    "static/js/main.66bdc9a0.js"
   ]
 }
