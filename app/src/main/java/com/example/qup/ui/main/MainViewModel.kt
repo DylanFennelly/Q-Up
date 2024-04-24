@@ -347,7 +347,7 @@ class MainViewModel(
 
         mainUiState = try {
             Log.i("ViewModel", "Starting coroutine")
-            val listResult = facilityRepository.getAttractions(currentBaseUrl + "test-data")
+            val listResult = facilityRepository.getAttractions(currentBaseUrl + "attractions")
             Log.i("ViewModel", "API result: $listResult.attractionList")
             MainUiState.Success(listResult.body)
         }catch (e: IOException){
